@@ -1,0 +1,6 @@
+[submodule "Codebase/Drivers/CMSIS"]
+	path = Codebase/Drivers/CMSIS
+	url = https://github.com/zhanwang-sky/CMSIS.git
+[submodule "Codebase/Drivers/STM32F7xx_HAL_Driver"]
+	path = Codebase/Drivers/STM32F7xx_HAL_Driver
+	url = https://github.com/zhanwang-sky/STM32F7xx_HAL_Driver.git
