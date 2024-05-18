@@ -1,0 +1,15 @@
+[submodule "Codebase/Drivers/CMSIS/Core"]
+	path = Codebase/Drivers/CMSIS/Core
+	url = https://github.com/zhanwang-sky/CMSIS-Core.git
+[submodule "Codebase/Drivers/CMSIS/Device/ST/STM32G4xx"]
+	path = Codebase/Drivers/CMSIS/Device/ST/STM32G4xx
+	url = https://github.com/zhanwang-sky/cmsis_device_g4.git
+[submodule "Codebase/Drivers/CMSIS/Device/ST/STM32F7xx"]
+	path = Codebase/Drivers/CMSIS/Device/ST/STM32F7xx
+	url = https://github.com/zhanwang-sky/cmsis_device_f7.git
+[submodule "Codebase/Drivers/STM32G4xx_HAL_Driver"]
+	path = Codebase/Drivers/STM32G4xx_HAL_Driver
+	url = https://github.com/zhanwang-sky/stm32g4xx_hal_driver.git
+[submodule "Codebase/Drivers/STM32F7xx_HAL_Driver"]
+	path = Codebase/Drivers/STM32F7xx_HAL_Driver
+	url = https://github.com/zhanwang-sky/stm32f7xx_hal_driver.git
