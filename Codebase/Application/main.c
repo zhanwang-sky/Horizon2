@@ -18,23 +18,16 @@ int main(void) {
 
   // loop here
   while (1) {
-    // blue
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
-    HAL_Delay(50);
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
-    HAL_Delay(50);
-
     // green
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
-    HAL_Delay(50);
+    HAL_Delay(30);
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_15);
-    HAL_Delay(50);
+    HAL_Delay(470);
 
-    // blue + green
-    HAL_Delay(800);
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14 | GPIO_PIN_15);
-    HAL_Delay(200);
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14 | GPIO_PIN_15);
-    HAL_Delay(1000);
+    // blue
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+    HAL_Delay(80);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
+    HAL_Delay(420);
   }
 }
