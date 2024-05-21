@@ -40,7 +40,7 @@ extern "C" {
 /* #define HAL_CRC_MODULE_ENABLED */
 /* #define HAL_CRYP_MODULE_ENABLED */
 /* #define HAL_DAC_MODULE_ENABLED */
-/* #define HAL_DMA_MODULE_ENABLED */
+#define HAL_DMA_MODULE_ENABLED
 /* #define HAL_EXTI_MODULE_ENABLED */
 /* #define HAL_FDCAN_MODULE_ENABLED */
 #define HAL_FLASH_MODULE_ENABLED
@@ -66,7 +66,7 @@ extern "C" {
 /* #define HAL_SMBUS_MODULE_ENABLED */
 /* #define HAL_SPI_MODULE_ENABLED */
 /* #define HAL_SRAM_MODULE_ENABLED */
-/* #define HAL_TIM_MODULE_ENABLED */
+#define HAL_TIM_MODULE_ENABLED
 /* #define HAL_UART_MODULE_ENABLED */
 /* #define HAL_USART_MODULE_ENABLED */
 /* #define HAL_WWDG_MODULE_ENABLED */
@@ -178,7 +178,8 @@ The real value may vary depending on the variations in voltage and temperature.*
   * @brief This is the HAL system configuration section
   */
 #define VDD_VALUE                   (3300UL) /* !< Value of VDD in mv */
-#define TICK_INT_PRIORITY           (0x0FUL) /* !< tick interrupt priority */
+#define TICK_INT_PRIORITY           (0x04UL) /* !< HAL_Tick interrupt priority */
+#define SYSTICK_INT_PRIORITY        (0x0FUL) /* !< SysTick interrupt priority */
 #define USE_RTOS                    0U
 #define PREFETCH_ENABLE             0U
 #define INSTRUCTION_CACHE_ENABLE    1U

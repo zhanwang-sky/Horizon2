@@ -14,20 +14,22 @@ int main(void) {
   BSP_MCU_Init();
   BSP_GPIO_Init();
 
-  HAL_Delay(2000);
+  HAL_Delay(500);
 
   // loop here
   while (1) {
-    // green
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
-    HAL_Delay(30);
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_15);
-    HAL_Delay(470);
-
     // blue
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
-    HAL_Delay(80);
+    HAL_Delay(100);
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
-    HAL_Delay(420);
+    HAL_Delay(100);
+
+    // green
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+    HAL_Delay(1);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_15);
+    HAL_Delay(199);
+
+    HAL_Delay(600);
   }
 }

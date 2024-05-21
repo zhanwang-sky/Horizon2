@@ -19,12 +19,8 @@
 /* Includes ----------------------------------------------------------------- */
 #include "stm32g4xx_hal.h"
 
-/* Private typedef ---------------------------------------------------------- */
-/* Private define ----------------------------------------------------------- */
-/* Private macro ------------------------------------------------------------ */
-/* Private variables -------------------------------------------------------- */
-/* Private function prototypes ---------------------------------------------- */
-/* Private functions -------------------------------------------------------- */
+/* Global variables --------------------------------------------------------- */
+extern TIM_HandleTypeDef htim6;
 
 /******************************************************************************/
 /*                  Cortex-M4 Processor Exceptions Handlers                   */
@@ -108,7 +104,6 @@ void PendSV_Handler(void) {
   * @retval None
   */
 void SysTick_Handler(void) {
-  HAL_IncTick();
 }
 
 /******************************************************************************/
@@ -119,9 +114,10 @@ void SysTick_Handler(void) {
 /******************************************************************************/
 
 /**
-  * @brief  This function handles PPP interrupt request.
+  * @brief  This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interrupts.
   * @param  None
   * @retval None
   */
-/*void PPP_IRQHandler(void) {
-}*/
+void TIM6_DAC_IRQHandler(void) {
+  HAL_TIM_IRQHandler(&htim6);
+}

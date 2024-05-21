@@ -411,6 +411,11 @@
               <FilePath>..\..\..\Codebase\BSP\MATEKG474HELI\Src\stm32g4xx_hal_msp.c</FilePath>
             </File>
             <File>
+              <FileName>stm32g4xx_hal_timebase_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\BSP\MATEKG474HELI\Src\stm32g4xx_hal_timebase_tim.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32g4xx_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\BSP\MATEKG474HELI\Src\stm32g4xx_it.c</FilePath>
@@ -446,6 +451,16 @@
               <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_cortex.c</FilePath>
             </File>
             <File>
+              <FileName>stm32g4xx_hal_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32g4xx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32g4xx_hal_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_flash.c</FilePath>
@@ -479,6 +494,16 @@
               <FileName>stm32g4xx_hal_rcc_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_rcc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32g4xx_hal_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32g4xx_hal_tim_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_tim_ex.c</FilePath>
             </File>
           </Files>
         </Group>

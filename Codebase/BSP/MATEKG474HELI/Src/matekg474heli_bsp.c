@@ -69,3 +69,10 @@ void BSP_GPIO_Init(void) {
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
+
+// ISRs
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+}
