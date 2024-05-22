@@ -12,6 +12,7 @@
 static void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  HAL_StatusTypeDef status = HAL_OK;
 
   /* Configure the main internal regulator output voltage */
   HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
@@ -27,9 +28,8 @@ static void SystemClock_Config(void) {
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-    while (1);
-  }
+  status = HAL_RCC_OscConfig(&RCC_OscInitStruct);
+  assert_param(status == HAL_OK);
 
   /* Initializes the CPU, AHB and APB buses clocks */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
@@ -38,16 +38,22 @@ static void SystemClock_Config(void) {
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
-    while (1);
-  }
+  status = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
+  assert_param(status == HAL_OK);
+}
+
+void BSP_Assert_Failed(uint8_t* file, uint32_t line) {
+  __disable_irq();
+  GPIOC->BSRR = (uint32_t) (GPIO_PIN_14 | GPIO_PIN_15);
+  while (1);
 }
 
 void BSP_MCU_Init(void) {
+  HAL_StatusTypeDef status = HAL_OK;
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  if (HAL_Init() != HAL_OK) {
-    while (1);
-  }
+  status = HAL_Init();
+  assert_param(status == HAL_OK);
 
   /* Configure the system clock */
   SystemClock_Config();

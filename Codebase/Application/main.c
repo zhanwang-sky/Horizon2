@@ -17,7 +17,9 @@ int main(void) {
   HAL_Delay(500);
 
   // loop here
-  while (1) {
+  for (uint32_t i = 0; ; ++i) {
+    assert_param(i < 5);
+
     // blue
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
     HAL_Delay(100);
