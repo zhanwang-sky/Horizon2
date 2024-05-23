@@ -44,16 +44,9 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
   HAL_StatusTypeDef status = HAL_OK;
 
   /* Sanity check */
-  if (TickPriority >= (1UL << __NVIC_PRIO_BITS) || SYSTICK_INT_PRIORITY >= (1UL << __NVIC_PRIO_BITS)) {
+  if (TickPriority >= (1UL << __NVIC_PRIO_BITS) || SYSTICK_INT_PRIORITY != 0x0FUL) {
     return HAL_ERROR;
   }
-
-  /* Configure the SysTick to have interrupt in 1ms time basis */
-  if (HAL_SYSTICK_Config(SystemCoreClock / 1000U) != 0) {
-    return HAL_ERROR;
-  }
-  /* Configure the SysTick IRQ priority */
-  HAL_NVIC_SetPriority(SysTick_IRQn, SYSTICK_INT_PRIORITY, 0U);
 
   /* Enable TIM6 clock */
   __HAL_RCC_TIM6_CLK_ENABLE();

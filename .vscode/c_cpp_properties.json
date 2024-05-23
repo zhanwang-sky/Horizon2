@@ -4,6 +4,8 @@
             "name": "MATEKG474HELI",
             "includePath": [
                 "${workspaceFolder}/Codebase/Application",
+                "${workspaceFolder}/Codebase/FreeRTOS/Include",
+                "${workspaceFolder}/Codebase/FreeRTOS/portable/GCC/ARM_CM4F",
                 "${workspaceFolder}/Codebase/BSP/MATEKG474HELI/Inc",
                 "${workspaceFolder}/Codebase/Drivers/CMSIS/Core/Include",
                 "${workspaceFolder}/Codebase/Drivers/CMSIS/Device/ST/STM32G4xx/Include",
@@ -12,7 +14,8 @@
             "defines": [
                 "USE_HAL_DRIVER",
                 "STM32G474xx",
-                "USE_FULL_ASSERT"
+                "USE_FULL_ASSERT",
+                "USE_FreeRTOS"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11"
