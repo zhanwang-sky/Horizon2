@@ -6,16 +6,13 @@
 //
 
 // Includes
-#include "bsp.h"
-#include "bsp_config.h"
-#include "FreeRTOS.h"
-#include "task.h"
+#include "al.h"
 
 #define BLUE_PIN GPIO_PIN_14
 #define GREEN_PIN GPIO_PIN_15
 
-#define BLUE_DUTY 50
-#define GREEN_DUTY 90
+#define BLUE_DUTY 300
+#define GREEN_DUTY 300
 #define DUMMY_DUTY 200
 #define PERIOD 1000
 
@@ -39,7 +36,7 @@ void green_task(void* pvParameters) {
 
   while (1) {
     // vTaskDelay(BLUE_DUTY / portTICK_PERIOD_MS);
-    vTaskDelay(DUMMY_DUTY / portTICK_PERIOD_MS);
+    // vTaskDelay(DUMMY_DUTY / portTICK_PERIOD_MS);
 
     HAL_GPIO_WritePin(GPIOC, GREEN_PIN, GPIO_PIN_RESET);
     vTaskDelay(GREEN_DUTY / portTICK_PERIOD_MS);
@@ -54,8 +51,7 @@ int main(void) {
   TaskHandle_t xHandle = NULL;
 
   // system init
-  BSP_MCU_Init();
-  BSP_GPIO_Init();
+  al_init();
 
   // create tasks
   xReturned = xTaskCreate(blue_task,

@@ -9,7 +9,7 @@
 #define FREERTOS_CONFIG_H
 
 // Includes
-#include "stm32g4xx_hal.h"
+#include "bsp_config.h"
 
 // Definitions
 #define configUSE_PREEMPTION                    1
@@ -80,8 +80,7 @@
 (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8U - __NVIC_PRIO_BITS))
 
 // Define to trap errors during development.
-#define configASSERT(x) ((x) ? (void) 0U : BSP_Assert_Failed((uint8_t*) __FILE__, __LINE__))
-void BSP_Assert_Failed(uint8_t* file, uint32_t line);
+#define configASSERT(x) assert_param(x)
 
 // Optional functions - most linkers will remove unused functions anyway.
 #define INCLUDE_vTaskPrioritySet                1

@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32G474xx,USE_FULL_ASSERT,USE_FreeRTOS</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\Codebase\FreeRTOS\include;..\..\..\Codebase\FreeRTOS\portable\GCC\ARM_CM4F;..\..\..\Codebase\BSP\MATEKG474HELI\Inc;..\..\..\Codebase\Drivers\CMSIS\Core\Include;..\..\..\Codebase\Drivers\CMSIS\Device\ST\STM32G4xx\Include;..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Inc</IncludePath>
+              <IncludePath>..\..\..\Codebase\AL\STM32\Inc;..\..\..\Codebase\FreeRTOS\include;..\..\..\Codebase\FreeRTOS\portable\GCC\ARM_CM4F;..\..\..\Codebase\BSP\MATEKG474HELI\Inc;..\..\..\Codebase\Drivers\CMSIS\Core\Include;..\..\..\Codebase\Drivers\CMSIS\Device\ST\STM32G4xx\Include;..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -393,6 +393,13 @@
         </Group>
         <Group>
           <GroupName>AL</GroupName>
+          <Files>
+            <File>
+              <FileName>al.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\AL\STM32\Src\al.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FreeRTOS</GroupName>

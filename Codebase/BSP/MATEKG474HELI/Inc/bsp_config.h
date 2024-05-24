@@ -32,6 +32,10 @@ do { \
   } \
 } while (0)
 
+// Functions
+void BSP_MCU_Init(void);
+void BSP_GPIO_Init(void);
+
 #ifdef __cplusplus
 }
 #endif
