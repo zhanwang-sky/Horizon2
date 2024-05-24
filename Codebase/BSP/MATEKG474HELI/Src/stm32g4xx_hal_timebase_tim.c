@@ -39,8 +39,8 @@ TIM_HandleTypeDef htim6;
   */
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
   RCC_ClkInitTypeDef clkconfig = {0};
-  uint32_t pFLatency = 0;
-  uint32_t uwTimclock = 0;
+  uint32_t pFLatency = 0U;
+  uint32_t uwTimclock = 0U;
   HAL_StatusTypeDef status = HAL_OK;
 
   /* Sanity check */
@@ -56,6 +56,9 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
 
   /* Compute TIM6 clock */
   uwTimclock = HAL_RCC_GetPCLK1Freq();
+  if (clkconfig.APB1CLKDivider != RCC_HCLK_DIV1) {
+    uwTimclock <<= 1U;
+  }
 
   /* Initialize TIM6 */
   htim6.Instance = TIM6;

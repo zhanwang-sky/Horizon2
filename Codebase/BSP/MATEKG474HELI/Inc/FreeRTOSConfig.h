@@ -21,7 +21,6 @@
 #define configMINIMAL_STACK_SIZE                128
 #define configMAX_TASK_NAME_LEN                 16
 #define configUSE_16_BIT_TICKS                  0
-#define configTICK_TYPE_WIDTH_IN_BITS           TICK_TYPE_WIDTH_32_BITS
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_TASK_NOTIFICATIONS            1
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES   1
@@ -36,12 +35,11 @@
 #define configMESSAGE_BUFFER_LENGTH_TYPE        size_t
 #define configHEAP_CLEAR_MEMORY_ON_FREE         1
 #define configUSE_APPLICATION_TASK_TAG          0
-#define configSTATS_BUFFER_MAX_LENGTH           0xFFFF
 
 // Memory allocation related definitions.
 #define configSUPPORT_STATIC_ALLOCATION         0
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE                   (24 * 1024)
+#define configTOTAL_HEAP_SIZE                   ((size_t) (10 * 1024))
 
 // Hook function related definitions.
 #define configUSE_IDLE_HOOK                     0
@@ -73,13 +71,13 @@
 // routine that makes calls to interrupt safe FreeRTOS API functions.
 // DO NOT CALL INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT
 // HAS A HIGHER PRIORITY THAN THIS! (higher priorities are lower numeric values.
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY (TICK_INT_PRIORITY + 1)
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY (TICK_INT_PRIORITY + 1UL)
 
 // Interrupt nesting behaviour configuration.
 #define configKERNEL_INTERRUPT_PRIORITY \
-(configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - __NVIC_PRIO_BITS))
+(configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8U - __NVIC_PRIO_BITS))
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY \
-(configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - __NVIC_PRIO_BITS))
+(configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8U - __NVIC_PRIO_BITS))
 
 // Define to trap errors during development.
 #define configASSERT(x) ((x) ? (void) 0U : BSP_Assert_Failed((uint8_t*) __FILE__, __LINE__))
