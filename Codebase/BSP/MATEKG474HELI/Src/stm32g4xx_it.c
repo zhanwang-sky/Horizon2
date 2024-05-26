@@ -21,6 +21,8 @@
 
 /* Global variables --------------------------------------------------------- */
 extern TIM_HandleTypeDef htim6;
+extern DMA_HandleTypeDef hdma_uart3_tx;
+extern UART_HandleTypeDef huart3;
 
 /******************************************************************************/
 /*                  Cortex-M4 Processor Exceptions Handlers                   */
@@ -127,4 +129,22 @@ void SysTick_Handler(void) {
 void TIM6_DAC_IRQHandler(void) {
   HAL_TIM_IRQHandler(&htim6);
   HAL_IncTick();
+}
+
+/**
+  * @brief  This function handles USART3 global interrupt / USART3 wake-up interrupt through EXTI line 28.
+  * @param  None
+  * @retval None
+  */
+void USART3_IRQHandler(void) {
+  HAL_UART_IRQHandler(&huart3);
+}
+
+/**
+  * @brief  This function handles DMA1 channel1 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel1_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_uart3_tx);
 }

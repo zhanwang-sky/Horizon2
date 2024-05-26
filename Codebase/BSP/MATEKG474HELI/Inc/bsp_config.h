@@ -17,6 +17,7 @@ extern "C" {
 
 // Definitions
 #define BSP_NR_GPIOs (2)
+#define BSP_NR_UARTs (1)
 
 // Macros
 #define BSP_GPIO_FD2PORTPIN(FD, PORT, PIN) \
@@ -35,6 +36,7 @@ do { \
 // Functions
 void BSP_MCU_Init(void);
 void BSP_GPIO_Init(void);
+void BSP_UART_Init(void);
 
 #ifdef __cplusplus
 }

@@ -15,6 +15,10 @@ void al_init(void) {
 #if (BSP_NR_GPIOs > 0)
   BSP_GPIO_Init();
 #endif
+
+#if (BSP_NR_UARTs > 0)
+  BSP_UART_Init();
+#endif
 }
 
 // ISRs

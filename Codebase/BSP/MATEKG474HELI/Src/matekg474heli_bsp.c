@@ -8,6 +8,10 @@
 // Includes
 #include "stm32g4xx_hal.h"
 
+// Global variables
+DMA_HandleTypeDef hdma_uart3_tx;
+UART_HandleTypeDef huart3;
+
 // Functions
 static void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -42,6 +46,17 @@ static void SystemClock_Config(void) {
   assert_param(status == HAL_OK);
 }
 
+static void SystemDMA_Config(void) {
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+}
+
 void BSP_Assert_Failed(uint8_t* file, uint32_t line) {
   __disable_irq();
   GPIOC->BSRR = (uint32_t) (GPIO_PIN_14 | GPIO_PIN_15);
@@ -57,15 +72,18 @@ void BSP_MCU_Init(void) {
 
   /* Configure the system clock */
   SystemClock_Config();
+
+  /* Configure DMA controller */
+  SystemDMA_Config();
 }
 
 void BSP_GPIO_Init(void) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  /* GPIO Ports Clock Enable */
+  /* Enable clocks */
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /* Configure GPIO pin Output Level */
+  /* Set GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14 | GPIO_PIN_15, GPIO_PIN_SET);
 
   /* Configure GPIO pins */
@@ -74,4 +92,38 @@ void BSP_GPIO_Init(void) {
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+
+void BSP_UART_Init(void) {
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Select peripherals' clock source */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  status = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+  assert_param(status == HAL_OK);
+
+  /* Enable clocks */
+  __HAL_RCC_USART3_CLK_ENABLE();
+
+  /* Init UART3 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 100000U;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_2;
+  huart3.Init.Parity = UART_PARITY_EVEN;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXINVERT_INIT;
+  huart3.AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
+  status = HAL_UART_Init(&huart3);
+  assert_param(status == HAL_OK);
+
+  /* Enable UART3 interrupts */
+  HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_EnableIRQ(USART3_IRQn);
 }

@@ -6,43 +6,56 @@
 //
 
 // Includes
+#include <stdio.h>
 #include "al.h"
 
+// Definitions
 #define BLUE_PIN GPIO_PIN_14
 #define GREEN_PIN GPIO_PIN_15
+#define FLASH_MS 50U
+#define PERIOD_MS 1000U
 
-#define BLUE_DUTY 300
-#define GREEN_DUTY 300
-#define DUMMY_DUTY 200
-#define PERIOD 1000
+// Global variables
+extern UART_HandleTypeDef huart3;
+uint32_t rx_cnt;
+uint8_t rx_buf;
 
+// Functions
 void blue_task(void* pvParameters) {
   TickType_t xLastWakeTime = xTaskGetTickCount();
+  char msg_buf[64] = {0};
+  int msg_len = 0;
+  HAL_StatusTypeDef status = HAL_OK;
 
   while (1) {
-    HAL_Delay(GREEN_DUTY);
-    HAL_Delay(DUMMY_DUTY);
-
     HAL_GPIO_WritePin(GPIOC, BLUE_PIN, GPIO_PIN_RESET);
-    HAL_Delay(BLUE_DUTY);
+    msg_len = snprintf(msg_buf, sizeof(msg_buf), "[BLUE] %u bytes received\r\n", rx_cnt);
+    status = HAL_UART_Transmit_DMA(&huart3, (const uint8_t*) msg_buf, msg_len);
+    assert_param(status == HAL_OK);
+    HAL_Delay(FLASH_MS);
     HAL_GPIO_TogglePin(GPIOC, BLUE_PIN);
 
-    vTaskDelayUntil(&xLastWakeTime, PERIOD / portTICK_PERIOD_MS);
+    vTaskDelayUntil(&xLastWakeTime, PERIOD_MS / portTICK_PERIOD_MS);
   }
 }
 
 void green_task(void* pvParameters) {
   TickType_t xLastWakeTime = xTaskGetTickCount();
+  char msg_buf[64] = {0};
+  int msg_len = 0;
+  HAL_StatusTypeDef status = HAL_OK;
 
   while (1) {
-    // vTaskDelay(BLUE_DUTY / portTICK_PERIOD_MS);
-    // vTaskDelay(DUMMY_DUTY / portTICK_PERIOD_MS);
+    vTaskDelay((PERIOD_MS / portTICK_PERIOD_MS) >> 1U);
 
     HAL_GPIO_WritePin(GPIOC, GREEN_PIN, GPIO_PIN_RESET);
-    vTaskDelay(GREEN_DUTY / portTICK_PERIOD_MS);
+    msg_len = snprintf(msg_buf, sizeof(msg_buf), "[GREEN] last byte is %02hhxh\r\n", rx_buf);
+    status = HAL_UART_Transmit_DMA(&huart3, (const uint8_t*) msg_buf, msg_len);
+    assert_param(status == HAL_OK);
+    HAL_Delay(FLASH_MS);
     HAL_GPIO_TogglePin(GPIOC, GREEN_PIN);
 
-    vTaskDelayUntil(&xLastWakeTime, PERIOD / portTICK_PERIOD_MS);
+    vTaskDelayUntil(&xLastWakeTime, PERIOD_MS / portTICK_PERIOD_MS);
   }
 }
 
@@ -58,7 +71,7 @@ int main(void) {
                           "blue",
                           configMINIMAL_STACK_SIZE,
                           NULL,  // thread param
-                          1,     // priority
+                          1U,     // priority
                           &xHandle);
   assert_param(xReturned == pdPASS);
 
@@ -66,13 +79,24 @@ int main(void) {
                           "green",
                           configMINIMAL_STACK_SIZE,
                           NULL,  // thread param
-                          2,     // priority
+                          2U,     // priority
                           &xHandle);
   assert_param(xReturned == pdPASS);
+
+  // start receiving
+  HAL_UART_Receive_IT(&huart3, &rx_buf, 1U);
 
   // start scheduler
   vTaskStartScheduler();
 
   // should not get here
   return 0;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
+  if (huart == &huart3) {
+    ++rx_cnt;
+    // continue receiving
+    HAL_UART_Receive_IT(&huart3, &rx_buf, 1U);
+  }
 }

@@ -19,12 +19,9 @@
 /* Includes ----------------------------------------------------------------- */
 #include "stm32g4xx_hal.h"
 
-/* Private typedef ---------------------------------------------------------- */
-/* Private define ----------------------------------------------------------- */
-/* Private macro ------------------------------------------------------------ */
-/* Private variables -------------------------------------------------------- */
-/* Private function prototypes ---------------------------------------------- */
-/* Private functions -------------------------------------------------------- */
+/* Global variables --------------------------------------------------------- */
+extern DMA_HandleTypeDef hdma_uart3_tx;
+extern UART_HandleTypeDef huart3;
 
 /**
   * @brief  Initialize the Global MSP.
@@ -35,31 +32,53 @@ void HAL_MspInit(void) {
   /* Enable RCC clock */
   __HAL_RCC_SYSCFG_CLK_ENABLE();
   __HAL_RCC_PWR_CLK_ENABLE();
+  /* Enable GPIOF in order to use external crystal */
+  __HAL_RCC_GPIOF_CLK_ENABLE();
 
   /* Disable the internal Pull-Up in Dead Battery pins of UCPD peripheral */
   HAL_PWREx_DisableUCPDDeadBattery();
 }
 
 /**
-  * @brief  DeInitialize the Global MSP.
+  * @brief  Initialize the UART MSP.
   * @param  None
   * @retval None
   */
-void HAL_MspDeInit(void) {
+void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (huart == &huart3) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource SERIAL_TX 3 B10 */
+    GPIO_InitStruct.Pin = GPIO_PIN_10;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    /* resource SERIAL_RX 3 B11 */
+    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* UART3 DMA Init */
+    /* UART3_TX */
+    hdma_uart3_tx.Instance = DMA1_Channel1;
+    hdma_uart3_tx.Init.Request = DMA_REQUEST_USART3_TX;
+    hdma_uart3_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_uart3_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_uart3_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_uart3_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_uart3_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_uart3_tx.Init.Mode = DMA_NORMAL;
+    hdma_uart3_tx.Init.Priority = DMA_PRIORITY_LOW;
+    status = HAL_DMA_Init(&hdma_uart3_tx);
+    assert_param(status == HAL_OK);
+
+    __HAL_LINKDMA(huart, hdmatx, hdma_uart3_tx);
+  }
 }
-
-/**
-  * @brief  Initialize the PPP MSP.
-  * @param  None
-  * @retval None
-  */
-/*void HAL_PPP_MspInit(void) {
-}*/
-
-/**
-  * @brief  DeInitialize the PPP MSP.
-  * @param  None
-  * @retval None
-  */
-/*void HAL_PPP_MspDeInit(void) {
-}*/
