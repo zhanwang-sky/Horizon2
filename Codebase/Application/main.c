@@ -16,7 +16,7 @@
 #define PERIOD_MS 1000U
 
 // Global variables
-extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart2;
 uint32_t rx_cnt;
 uint8_t rx_buf;
 
@@ -30,9 +30,9 @@ void blue_task(void* pvParameters) {
   while (1) {
     HAL_GPIO_WritePin(GPIOC, BLUE_PIN, GPIO_PIN_RESET);
     msg_len = snprintf(msg_buf, sizeof(msg_buf), "[BLUE] %u bytes received\r\n", rx_cnt);
-    status = HAL_UART_Transmit_DMA(&huart3, (const uint8_t*) msg_buf, msg_len);
+    status = HAL_UART_Transmit_DMA(&huart2, (const uint8_t*) msg_buf, msg_len);
     assert_param(status == HAL_OK);
-    HAL_Delay(FLASH_MS);
+    HAL_Delay(FLASH_MS << 2U);
     HAL_GPIO_TogglePin(GPIOC, BLUE_PIN);
 
     vTaskDelayUntil(&xLastWakeTime, PERIOD_MS / portTICK_PERIOD_MS);
@@ -50,7 +50,7 @@ void green_task(void* pvParameters) {
 
     HAL_GPIO_WritePin(GPIOC, GREEN_PIN, GPIO_PIN_RESET);
     msg_len = snprintf(msg_buf, sizeof(msg_buf), "[GREEN] last byte is %02hhxh\r\n", rx_buf);
-    status = HAL_UART_Transmit_DMA(&huart3, (const uint8_t*) msg_buf, msg_len);
+    status = HAL_UART_Transmit_DMA(&huart2, (const uint8_t*) msg_buf, msg_len);
     assert_param(status == HAL_OK);
     HAL_Delay(FLASH_MS);
     HAL_GPIO_TogglePin(GPIOC, GREEN_PIN);
@@ -84,7 +84,7 @@ int main(void) {
   assert_param(xReturned == pdPASS);
 
   // start receiving
-  HAL_UART_Receive_IT(&huart3, &rx_buf, 1U);
+  HAL_UART_Receive_IT(&huart2, &rx_buf, 1U);
 
   // start scheduler
   vTaskStartScheduler();
@@ -94,9 +94,9 @@ int main(void) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
-  if (huart == &huart3) {
+  if (huart == &huart2) {
     ++rx_cnt;
     // continue receiving
-    HAL_UART_Receive_IT(&huart3, &rx_buf, 1U);
+    HAL_UART_Receive_IT(&huart2, &rx_buf, 1U);
   }
 }

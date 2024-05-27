@@ -9,7 +9,9 @@
 #include "stm32g4xx_hal.h"
 
 // Global variables
+DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
+UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
 // Functions
@@ -55,6 +57,9 @@ static void SystemDMA_Config(void) {
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 }
 
 void BSP_Assert_Failed(uint8_t* file, uint32_t line) {
@@ -99,13 +104,30 @@ void BSP_UART_Init(void) {
   HAL_StatusTypeDef status = HAL_OK;
 
   /* Select peripherals' clock source */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART3;
+  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
   status = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
   assert_param(status == HAL_OK);
 
   /* Enable clocks */
+  __HAL_RCC_USART2_CLK_ENABLE();
   __HAL_RCC_USART3_CLK_ENABLE();
+
+  /* Init UART2 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200U;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  status = HAL_UART_Init(&huart2);
+  assert_param(status == HAL_OK);
 
   /* Init UART3 */
   huart3.Instance = USART3;
@@ -123,6 +145,9 @@ void BSP_UART_Init(void) {
   status = HAL_UART_Init(&huart3);
   assert_param(status == HAL_OK);
 
+  /* Enable UART2 interrupts */
+  HAL_NVIC_SetPriority(USART2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* Enable UART3 interrupts */
   HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(USART3_IRQn);

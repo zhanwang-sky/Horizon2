@@ -20,7 +20,9 @@
 #include "stm32g4xx_hal.h"
 
 /* Global variables --------------------------------------------------------- */
+extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
+extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
 /**
@@ -48,7 +50,39 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   HAL_StatusTypeDef status = HAL_OK;
 
-  if (huart == &huart3) {
+  if (huart == &huart2) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource SERIAL_TX 2 A02 */
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    /* resource SERIAL_RX 2 A03 */
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* UART2 DMA Init */
+    /* UART2_TX */
+    hdma_uart2_tx.Instance = DMA1_Channel2;
+    hdma_uart2_tx.Init.Request = DMA_REQUEST_USART2_TX;
+    hdma_uart2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_uart2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_uart2_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_uart2_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_uart2_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_uart2_tx.Init.Mode = DMA_NORMAL;
+    hdma_uart2_tx.Init.Priority = DMA_PRIORITY_LOW;
+    status = HAL_DMA_Init(&hdma_uart2_tx);
+    assert_param(status == HAL_OK);
+
+    __HAL_LINKDMA(huart, hdmatx, hdma_uart2_tx);
+  } else if (huart == &huart3) {
     /* Enable GPIO clock */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 

@@ -21,7 +21,9 @@
 
 /* Global variables --------------------------------------------------------- */
 extern TIM_HandleTypeDef htim6;
+extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
+extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
 /******************************************************************************/
@@ -132,6 +134,15 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 /**
+  * @brief  This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
+  * @param  None
+  * @retval None
+  */
+void USART2_IRQHandler(void) {
+  HAL_UART_IRQHandler(&huart2);
+}
+
+/**
   * @brief  This function handles USART3 global interrupt / USART3 wake-up interrupt through EXTI line 28.
   * @param  None
   * @retval None
@@ -147,4 +158,13 @@ void USART3_IRQHandler(void) {
   */
 void DMA1_Channel1_IRQHandler(void) {
   HAL_DMA_IRQHandler(&hdma_uart3_tx);
+}
+
+/**
+  * @brief  This function handles DMA1 channel2 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel2_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_uart2_tx);
 }
