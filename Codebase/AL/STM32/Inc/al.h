@@ -12,7 +12,15 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Functions
 void al_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* AL_H */

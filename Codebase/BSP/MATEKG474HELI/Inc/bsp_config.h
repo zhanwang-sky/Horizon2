@@ -8,12 +8,12 @@
 #ifndef BSP_CONFIG_H
 #define BSP_CONFIG_H
 
+// Includes
+#include "stm32g4xx_hal.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// Includes
-#include "stm32g4xx_hal.h"
 
 // Definitions
 #define BSP_NR_GPIOs (2)
