@@ -125,7 +125,8 @@ void BSP_UART_Init(void) {
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
+  huart2.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
   status = HAL_UART_Init(&huart2);
   assert_param(status == HAL_OK);
 
@@ -140,15 +141,16 @@ void BSP_UART_Init(void) {
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart3.Init.ClockPrescaler = UART_PRESCALER_DIV16;
-  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXINVERT_INIT;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXINVERT_INIT | UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
   huart3.AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
+  huart3.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
   status = HAL_UART_Init(&huart3);
   assert_param(status == HAL_OK);
 
   /* Enable UART2 interrupts */
-  HAL_NVIC_SetPriority(USART2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_SetPriority(USART2_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* Enable UART3 interrupts */
-  HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(USART3_IRQn);
 }

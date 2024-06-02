@@ -18,6 +18,7 @@ void al_init(void) {
 
 #if (BSP_NR_UARTs > 0)
   BSP_UART_Init();
+  al_uart_init();
 #endif
 }
 

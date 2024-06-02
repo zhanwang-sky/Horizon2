@@ -134,29 +134,15 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 /**
-  * @brief  This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
-  * @param  None
-  * @retval None
-  */
-void USART2_IRQHandler(void) {
-  HAL_UART_IRQHandler(&huart2);
-}
-
-/**
-  * @brief  This function handles USART3 global interrupt / USART3 wake-up interrupt through EXTI line 28.
-  * @param  None
-  * @retval None
-  */
-void USART3_IRQHandler(void) {
-  HAL_UART_IRQHandler(&huart3);
-}
-
-/**
   * @brief  This function handles DMA1 channel1 global interrupt.
   * @param  None
   * @retval None
   */
 void DMA1_Channel1_IRQHandler(void) {
+  // ATTENTION:
+  // `ErrorCode` might be modified by many HAL APIs in different interrupts.
+  // Ensure that all interrupts which may modify `ErrorCode` have the same preemption priority.
+  huart3.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_DMA_IRQHandler(&hdma_uart3_tx);
 }
 
@@ -166,5 +152,26 @@ void DMA1_Channel1_IRQHandler(void) {
   * @retval None
   */
 void DMA1_Channel2_IRQHandler(void) {
+  huart2.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_DMA_IRQHandler(&hdma_uart2_tx);
+}
+
+/**
+  * @brief  This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
+  * @param  None
+  * @retval None
+  */
+void USART2_IRQHandler(void) {
+  huart2.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_UART_IRQHandler(&huart2);
+}
+
+/**
+  * @brief  This function handles USART3 global interrupt / USART3 wake-up interrupt through EXTI line 28.
+  * @param  None
+  * @retval None
+  */
+void USART3_IRQHandler(void) {
+  huart3.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_UART_IRQHandler(&huart3);
 }

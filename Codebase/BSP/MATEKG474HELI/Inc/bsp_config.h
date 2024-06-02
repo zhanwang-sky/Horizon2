@@ -33,7 +33,42 @@ do { \
   } \
 } while (0)
 
-// Functions
+#define BSP_UART_FD2HANDLE(FD, HANDLE) \
+do { \
+  if ((FD) == 0) { \
+    HANDLE = &huart3; \
+  } else { \
+    HANDLE = &huart2; \
+  } \
+} while (0)
+
+#define BSP_UART_HANDLE2FD(HANDLE, FD) \
+do { \
+  if ((HANDLE) == &huart3) { \
+    FD = 0; \
+  } else { \
+    FD = 1; \
+  } \
+} while (0)
+
+#define BSP_UART_HANDLE_ERROR(HANDLE, RX_ERR, TX_ERR) \
+do { \
+  if ((HANDLE->ErrorCode & (HAL_UART_ERROR_PE | HAL_UART_ERROR_NE | HAL_UART_ERROR_FE | HAL_UART_ERROR_ORE | HAL_UART_ERROR_RTO)) != 0U) { \
+    /* Read RDR to clear RXNE */ \
+    volatile uint32_t dummy = HANDLE->Instance->RDR; \
+    (void) dummy; \
+    RX_ERR = 1; \
+  } \
+  if ((HANDLE->ErrorCode & HAL_UART_ERROR_DMA) != 0U) { \
+    TX_ERR = 1; \
+  } \
+} while (0)
+
+// Global variables
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+
+// Function prototypes
 void BSP_MCU_Init(void);
 void BSP_GPIO_Init(void);
 void BSP_UART_Init(void);
