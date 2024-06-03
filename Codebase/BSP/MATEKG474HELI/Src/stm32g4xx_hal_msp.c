@@ -24,6 +24,7 @@ extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern TIM_HandleTypeDef htim3;
 
 /**
   * @brief  Initialize the Global MSP.
@@ -43,7 +44,7 @@ void HAL_MspInit(void) {
 
 /**
   * @brief  Initialize the UART MSP.
-  * @param  None
+  * @param  huart UART handle
   * @retval None
   */
 void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
@@ -114,5 +115,34 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
     assert_param(status == HAL_OK);
 
     __HAL_LINKDMA(huart, hdmatx, hdma_uart3_tx);
+  }
+}
+
+/**
+  * @brief  Initializes the TIM PWM MSP.
+  * @param  htim TIM handle
+  * @retval None
+  */
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  if (htim == &htim3) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource SERVO 3 A07 */
+    /* resource SERVO 4 A06 */
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    /* resource SERVO 1 B01 */
+    /* resource SERVO 2 B00 */
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   }
 }

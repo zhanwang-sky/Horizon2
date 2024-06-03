@@ -400,6 +400,11 @@
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al.c</FilePath>
             </File>
             <File>
+              <FileName>al_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\AL\STM32\Src\al_pwm.c</FilePath>
+            </File>
+            <File>
               <FileName>al_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al_uart.c</FilePath>

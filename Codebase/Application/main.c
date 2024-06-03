@@ -6,6 +6,7 @@
 //
 
 // Includes
+#include <math.h>
 #include <stdio.h>
 #include "al.h"
 
@@ -63,6 +64,22 @@ void uart_demo_task(void* param) {
   }
 }
 
+void pid_loop(void* param) {
+  const float delta = 3.141593e-3f; // step length
+  TickType_t last_waken;
+
+  last_waken = xTaskGetTickCount();
+  while (1) {
+    for (int i = 0; i < 2000; ++i) {
+      float rad = (float) i * delta;
+      float ratio = cosf(rad);
+      int pulse = 1500 - (int) (500.f * ratio);
+      al_pwm_write(0, pulse);
+      vTaskDelayUntil(&last_waken, 2 / portTICK_PERIOD_MS);
+    }
+  }
+}
+
 int main(void) {
   BaseType_t xReturned = pdPASS;
 
@@ -72,6 +89,14 @@ int main(void) {
   // create tasks
   xReturned = xTaskCreate(uart_demo_task,
                           "UART demo task",
+                          configMINIMAL_STACK_SIZE,
+                          NULL,
+                          2,
+                          NULL);
+  assert_param(xReturned == pdTRUE);
+
+  xReturned = xTaskCreate(pid_loop,
+                          "PID loop",
                           configMINIMAL_STACK_SIZE,
                           NULL,
                           1,

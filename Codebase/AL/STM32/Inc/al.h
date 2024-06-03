@@ -18,6 +18,10 @@
 #include "al_uart.h"
 #endif
 
+#if (BSP_NR_PWMs > 0)
+#include "al_pwm.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
