@@ -23,8 +23,11 @@
 extern TIM_HandleTypeDef htim6;
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
+extern DMA_HandleTypeDef hdma_spi1_rx;
+extern DMA_HandleTypeDef hdma_spi1_tx;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern SPI_HandleTypeDef hspi1;
 
 /******************************************************************************/
 /*                  Cortex-M4 Processor Exceptions Handlers                   */
@@ -131,6 +134,29 @@ void SysTick_Handler(void) {
 void TIM6_DAC_IRQHandler(void) {
   HAL_TIM_IRQHandler(&htim6);
   HAL_IncTick();
+}
+
+/**
+  * @brief This function handles DMA1 channel6 global interrupt.
+  */
+void DMA1_Channel6_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_spi1_rx);
+}
+
+/**
+  * @brief This function handles DMA1 channel7 global interrupt.
+  */
+void DMA1_Channel7_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_spi1_tx);
+}
+
+/**
+  * @brief  This function handles SPI1 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void SPI1_IRQHandler(void) {
+  HAL_SPI_IRQHandler(&hspi1);
 }
 
 /**

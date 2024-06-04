@@ -15,7 +15,6 @@
             "defines": [
                 "USE_HAL_DRIVER",
                 "STM32G474xx",
-                "USE_FULL_ASSERT",
                 "USE_FreeRTOS"
             ],
             "cStandard": "c11",

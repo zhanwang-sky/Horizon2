@@ -19,6 +19,7 @@ extern "C" {
 #define BSP_NR_GPIOs (2)
 #define BSP_NR_PWMs  (4)
 #define BSP_NR_UARTs (2)
+#define BSP_NR_SPIs  (1)
 
 // Macros
 #define BSP_GPIO_FD2PORTPIN(FD, PORT, PIN) \
@@ -92,6 +93,7 @@ void BSP_MCU_Init(void);
 void BSP_GPIO_Init(void);
 void BSP_PWM_Init(void);
 void BSP_UART_Init(void);
+void BSP_SPI_Init(void);
 
 #ifdef __cplusplus
 }

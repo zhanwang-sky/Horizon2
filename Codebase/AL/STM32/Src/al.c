@@ -24,6 +24,10 @@ void al_init(void) {
   BSP_UART_Init();
   al_uart_init();
 #endif
+
+#if (BSP_NR_SPIs > 0)
+  BSP_SPI_Init();
+#endif
 }
 
 // ISRs

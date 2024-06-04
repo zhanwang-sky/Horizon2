@@ -15,9 +15,11 @@
 #define GREEN_PIN GPIO_PIN_15
 
 // Global variables
+extern SPI_HandleTypeDef hspi1;
 volatile uint32_t rx_cnt = 0;
 volatile uint32_t rx_err = 0;
 volatile uint8_t last_rx = 0;
+volatile uint8_t spi_done = 0;
 
 // Functions
 void uart_rx_cb(int fd, int ec, void* param) {
@@ -38,10 +40,6 @@ void uart_demo_task(void* param) {
   int msg_len;
   int rc;
 
-  HAL_GPIO_WritePin(GPIOC, BLUE_PIN, GPIO_PIN_RESET);
-  vTaskDelay(5000 / portTICK_PERIOD_MS);
-  HAL_GPIO_TogglePin(GPIOC, BLUE_PIN);
-
   al_uart_start_receiving(1, uart_rx_cb);
 
   last_waken = xTaskGetTickCount();
@@ -55,7 +53,7 @@ void uart_demo_task(void* param) {
                         i, rx_cnt, rx_err, last_rx);
 
     HAL_GPIO_WritePin(GPIOC, GREEN_PIN, GPIO_PIN_RESET);
-    rc = al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, 0, uart_tx_cb, NULL);
+    rc = al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, 10, uart_tx_cb, NULL);
     if (rc != 0) {
       HAL_GPIO_TogglePin(GPIOC, GREEN_PIN);
     }
@@ -83,6 +81,31 @@ void pid_loop(void* param) {
   }
 }
 
+void imu_reader(void* param) {
+  HAL_StatusTypeDef status = HAL_OK;
+  uint8_t rxbuf[2];
+  uint8_t txbuf[2];
+  char msg_buf[48];
+  int msg_len;
+
+  // power-up delay
+  HAL_GPIO_WritePin(GPIOC, BLUE_PIN, GPIO_PIN_RESET);
+  vTaskDelay(500 / portTICK_PERIOD_MS);
+  HAL_GPIO_TogglePin(GPIOC, BLUE_PIN);
+
+  // read who_am_i
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+  txbuf[0] = 0x80 | 0x75;
+  status = HAL_SPI_TransmitReceive_DMA(&hspi1, txbuf, rxbuf, 2U);
+
+  while (!spi_done);
+
+  msg_len = snprintf(msg_buf, sizeof(msg_buf), "<ICM-42688-P> who_am_i=%02hhx, hal_rc=%d\r\n", rxbuf[1], status);
+  al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, 10, NULL, NULL);
+
+  vTaskSuspend(NULL);
+}
+
 int main(void) {
   BaseType_t xReturned = pdPASS;
 
@@ -106,9 +129,22 @@ int main(void) {
                           NULL);
   assert_param(xReturned == pdTRUE);
 
+  xReturned = xTaskCreate(imu_reader,
+                          "IMU reader",
+                          configMINIMAL_STACK_SIZE,
+                          NULL,
+                          3,
+                          NULL);
+  assert_param(xReturned == pdTRUE);
+
   // start scheduler
   vTaskStartScheduler();
 
   // should not get here
   return 0;
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
+  spi_done = 1;
 }

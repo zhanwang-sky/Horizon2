@@ -22,9 +22,12 @@
 /* Global variables --------------------------------------------------------- */
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
+extern DMA_HandleTypeDef hdma_spi1_rx;
+extern DMA_HandleTypeDef hdma_spi1_tx;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern SPI_HandleTypeDef hspi1;
 
 /**
   * @brief  Initialize the Global MSP.
@@ -144,5 +147,67 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
     assert_param(status == HAL_OK);
 
     __HAL_LINKDMA(huart, hdmatx, hdma_uart3_tx);
+  }
+}
+
+/**
+  * @brief  Initialize the SPI MSP.
+  * @param  hspi SPI handle
+  * @retval None
+  */
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (hspi == &hspi1) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource SPI_SCK 1 B03 */
+    /* resource SPI_MISO 1 B04 */
+    /* resource SPI_MOSI 1 B05 */
+    GPIO_InitStruct.Pin = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    /* Set GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+    /* resource GYRO_CS 1 B06 */
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* SPI1 DMA Init */
+    /* SPI1_RX */
+    hdma_spi1_rx.Instance = DMA1_Channel6;
+    hdma_spi1_rx.Init.Request = DMA_REQUEST_SPI1_RX;
+    hdma_spi1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_spi1_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi1_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi1_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi1_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi1_rx.Init.Mode = DMA_NORMAL;
+    hdma_spi1_rx.Init.Priority = DMA_PRIORITY_HIGH;
+    status = HAL_DMA_Init(&hdma_spi1_rx);
+    assert_param(status == HAL_OK);
+    __HAL_LINKDMA(hspi, hdmarx, hdma_spi1_rx);
+    /* SPI1_TX */
+    hdma_spi1_tx.Instance = DMA1_Channel7;
+    hdma_spi1_tx.Init.Request = DMA_REQUEST_SPI1_TX;
+    hdma_spi1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_spi1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi1_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi1_tx.Init.Mode = DMA_NORMAL;
+    hdma_spi1_tx.Init.Priority = DMA_PRIORITY_HIGH;
+    status = HAL_DMA_Init(&hdma_spi1_tx);
+    assert_param(status == HAL_OK);
+    __HAL_LINKDMA(hspi, hdmatx, hdma_spi1_tx);
   }
 }

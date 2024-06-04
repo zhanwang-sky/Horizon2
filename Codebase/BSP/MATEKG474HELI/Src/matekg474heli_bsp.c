@@ -11,9 +11,12 @@
 // Global variables
 DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
+DMA_HandleTypeDef hdma_spi1_tx;
 TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+SPI_HandleTypeDef hspi1;
 
 // Functions
 static void SystemClock_Config(void) {
@@ -61,6 +64,12 @@ static void SystemDMA_Config(void) {
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 }
 
 void BSP_Assert_Failed(uint8_t* file, uint32_t line) {
@@ -206,4 +215,33 @@ void BSP_UART_Init(void) {
   /* Enable UART3 interrupts */
   HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(USART3_IRQn);
+}
+
+void BSP_SPI_Init(void) {
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Enable clocks */
+  __HAL_RCC_SPI1_CLK_ENABLE();
+
+  /* Init SPI1 */
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 7;
+  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+  status = HAL_SPI_Init(&hspi1);
+  assert_param(status == HAL_OK);
+
+  /* Enable SPI1 interrupts */
+  HAL_NVIC_SetPriority(SPI1_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(SPI1_IRQn);
 }

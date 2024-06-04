@@ -64,7 +64,7 @@ extern "C" {
 /* #define HAL_SAI_MODULE_ENABLED */
 /* #define HAL_SMARTCARD_MODULE_ENABLED */
 /* #define HAL_SMBUS_MODULE_ENABLED */
-/* #define HAL_SPI_MODULE_ENABLED */
+#define HAL_SPI_MODULE_ENABLED
 /* #define HAL_SRAM_MODULE_ENABLED */
 #define HAL_TIM_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
@@ -190,7 +190,7 @@ The real value may vary depending on the variations in voltage and temperature.*
   * @brief Uncomment the line below to expanse the "assert_param" macro in the
   *        HAL drivers code
   */
-/* #define USE_FULL_ASSERT             1U */
+#define USE_FULL_ASSERT             1U
 
 /* ###################### SPI peripheral configuration ###################### */
 
@@ -199,7 +199,7 @@ The real value may vary depending on the variations in voltage and temperature.*
  * Deactivated: CRC code cleaned from driver
  */
 
-#define USE_SPI_CRC                 1U
+#define USE_SPI_CRC                 0U
 
 /* Includes ----------------------------------------------------------------- */
 /**
