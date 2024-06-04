@@ -16,13 +16,13 @@ void al_init(void) {
   BSP_GPIO_Init();
 #endif
 
+#if (BSP_NR_PWMs > 0)
+  BSP_PWM_Init();
+#endif
+
 #if (BSP_NR_UARTs > 0)
   BSP_UART_Init();
   al_uart_init();
-#endif
-
-#if (BSP_NR_PWMs > 0)
-  BSP_PWM_Init();
 #endif
 }
 

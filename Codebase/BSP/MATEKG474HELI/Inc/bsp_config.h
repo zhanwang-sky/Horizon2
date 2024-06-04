@@ -17,8 +17,8 @@ extern "C" {
 
 // Definitions
 #define BSP_NR_GPIOs (2)
-#define BSP_NR_UARTs (2)
 #define BSP_NR_PWMs  (4)
+#define BSP_NR_UARTs (2)
 
 // Macros
 #define BSP_GPIO_FD2PORTPIN(FD, PORT, PIN) \
@@ -27,10 +27,27 @@ do { \
     /* PC14 */ \
     PORT = GPIOC; \
     PIN = GPIO_PIN_14; \
-  } else { \
+  } else if ((FD) == 1) { \
     /* PC15 */ \
     PORT = GPIOC; \
     PIN = GPIO_PIN_15; \
+  } \
+} while (0)
+
+#define BSP_PWM_FD2HANDLECH(FD, HANDLE, CH) \
+do { \
+  if ((FD) == 0) { \
+    HANDLE = &htim3; \
+    CH = TIM_CHANNEL_4; \
+  } else if ((FD) == 1) { \
+    HANDLE = &htim3; \
+    CH = TIM_CHANNEL_3; \
+  } else if ((FD) == 2) { \
+    HANDLE = &htim3; \
+    CH = TIM_CHANNEL_2; \
+  } else if ((FD) == 3) { \
+    HANDLE = &htim3; \
+    CH = TIM_CHANNEL_1; \
   } \
 } while (0)
 
@@ -65,33 +82,16 @@ do { \
   } \
 } while (0)
 
-#define BSP_PWM_FD2HCH(FD, HANDLE, CH) \
-do { \
-  if ((FD) == 0) { \
-    HANDLE = &htim3; \
-    CH = TIM_CHANNEL_4; \
-  } else if ((FD) == 1) { \
-    HANDLE = &htim3; \
-    CH = TIM_CHANNEL_3; \
-  } else if ((FD) == 2) { \
-    HANDLE = &htim3; \
-    CH = TIM_CHANNEL_2; \
-  } else if ((FD) == 3) { \
-    HANDLE = &htim3; \
-    CH = TIM_CHANNEL_1; \
-  } \
-} while (0)
-
 // Global variables
+extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
-extern TIM_HandleTypeDef htim3;
 
 // Function prototypes
 void BSP_MCU_Init(void);
 void BSP_GPIO_Init(void);
-void BSP_UART_Init(void);
 void BSP_PWM_Init(void);
+void BSP_UART_Init(void);
 
 #ifdef __cplusplus
 }

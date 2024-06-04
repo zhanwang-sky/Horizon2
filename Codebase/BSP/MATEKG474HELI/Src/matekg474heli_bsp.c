@@ -11,9 +11,9 @@
 // Global variables
 DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
+TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
-TIM_HandleTypeDef htim3;
 
 // Functions
 static void SystemClock_Config(void) {
@@ -100,6 +100,58 @@ void BSP_GPIO_Init(void) {
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
+void BSP_PWM_Init(void) {
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  RCC_ClkInitTypeDef clkconfig = {0};
+  uint32_t pFLatency = 0U;
+  uint32_t uwTimclock = 0U;
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Enable clocks */
+  __HAL_RCC_TIM3_CLK_ENABLE();
+
+  /* Get clock configuration */
+  HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
+
+  /* Compute TIM3 clock */
+  uwTimclock = HAL_RCC_GetPCLK1Freq();
+  if (clkconfig.APB1CLKDivider != RCC_HCLK_DIV1) {
+    uwTimclock <<= 1U;
+  }
+
+  /* Init TIM3 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = (uwTimclock / 1000000U) - 1U; // 1 MHz counter clock (resolution in 1 us)
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = (1000000U / 50U) - 1U; // 50 Hz period
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  status = HAL_TIM_PWM_Init(&htim3);
+  assert_param(status == HAL_OK);
+  /* Init channels */
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0U;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4);
+  assert_param(status == HAL_OK);
+  /* Start output */
+  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+  assert_param(status == HAL_OK);
+}
+
 void BSP_UART_Init(void) {
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
   HAL_StatusTypeDef status = HAL_OK;
@@ -154,56 +206,4 @@ void BSP_UART_Init(void) {
   /* Enable UART3 interrupts */
   HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(USART3_IRQn);
-}
-
-void BSP_PWM_Init(void) {
-  TIM_OC_InitTypeDef sConfigOC = {0};
-  RCC_ClkInitTypeDef clkconfig = {0};
-  uint32_t pFLatency = 0U;
-  uint32_t uwTimclock = 0U;
-  HAL_StatusTypeDef status = HAL_OK;
-
-  /* Enable clocks */
-  __HAL_RCC_TIM3_CLK_ENABLE();
-
-  /* Get clock configuration */
-  HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
-
-  /* Compute TIM3 clock */
-  uwTimclock = HAL_RCC_GetPCLK1Freq();
-  if (clkconfig.APB1CLKDivider != RCC_HCLK_DIV1) {
-    uwTimclock <<= 1U;
-  }
-
-  /* Init TIM3 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = (uwTimclock / 1000000U) - 1U; // 1 MHz counter clock (resolution in 1 us)
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = (1000000U / 50U) - 1U; // 50 Hz period
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  status = HAL_TIM_PWM_Init(&htim3);
-  assert_param(status == HAL_OK);
-  /* Init channels */
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
-  assert_param(status == HAL_OK);
-  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
-  assert_param(status == HAL_OK);
-  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
-  assert_param(status == HAL_OK);
-  status = HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4);
-  assert_param(status == HAL_OK);
-  /* Start output */
-  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-  assert_param(status == HAL_OK);
-  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-  assert_param(status == HAL_OK);
-  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
-  assert_param(status == HAL_OK);
-  status = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-  assert_param(status == HAL_OK);
 }

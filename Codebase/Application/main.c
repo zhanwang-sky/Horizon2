@@ -48,7 +48,7 @@ void uart_demo_task(void* param) {
   for (uint32_t i = 0; ; ++i) {
     msg_len = 0;
     if (i == 0) {
-      msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len, "h8ua\r\n");
+      msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len, "8hhd\r\n");
     }
     msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
                         "[%d] rx_cnt=%u rx_err=%u last_rx=%02hhx\r\n",
@@ -73,8 +73,11 @@ void pid_loop(void* param) {
     for (int i = 0; i < 2000; ++i) {
       float rad = (float) i * delta;
       float ratio = cosf(rad);
-      int pulse = 1500 - (int) (500.f * ratio);
-      al_pwm_write(0, pulse);
+      int pulse = (int) (500.f * ratio);
+      al_pwm_write(0, 1350 + pulse);
+      al_pwm_write(1, 1400 + pulse);
+      al_pwm_write(2, 1600 + pulse);
+      al_pwm_write(3, 1750 + pulse);
       vTaskDelayUntil(&last_waken, 2 / portTICK_PERIOD_MS);
     }
   }

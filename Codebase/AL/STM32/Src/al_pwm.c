@@ -21,7 +21,7 @@ int al_pwm_read(int fd, int* pulse) {
   }
 
   // get handler
-  BSP_PWM_FD2HCH(fd, htim, ch);
+  BSP_PWM_FD2HANDLECH(fd, htim, ch);
   if (!htim) {
     return AL_ERROR_BSP;
   }
@@ -49,7 +49,7 @@ int al_pwm_write(int fd, int pulse) {
   }
 
   // get handler
-  BSP_PWM_FD2HCH(fd, htim, ch);
+  BSP_PWM_FD2HANDLECH(fd, htim, ch);
   if (!htim) {
     return AL_ERROR_BSP;
   }
