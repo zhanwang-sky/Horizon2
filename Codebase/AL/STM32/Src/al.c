@@ -29,8 +29,3 @@ void al_init(void) {
   BSP_SPI_Init();
 #endif
 }
-
-// ISRs
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-  // nothing to do
-}

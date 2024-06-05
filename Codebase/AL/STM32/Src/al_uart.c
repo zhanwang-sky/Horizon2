@@ -15,6 +15,9 @@ static SemaphoreHandle_t al_uart_rx_bus_semphrs[BSP_NR_UARTs];
 static SemaphoreHandle_t al_uart_tx_bus_semphrs[BSP_NR_UARTs];
 static al_uart_cb_t al_uart_rx_callbacks[BSP_NR_UARTs];
 static al_uart_cb_t al_uart_tx_callbacks[BSP_NR_UARTs];
+// ATTENTION:
+// The `word length` configured in BSP should be exactly 8-bit,
+// shorter or longer will cause unpredictable error.
 static uint8_t al_uart_rx_bufs[BSP_NR_UARTs];
 static void* al_uart_tx_params[BSP_NR_UARTs];
 
@@ -101,7 +104,12 @@ int al_uart_async_send(int fd, const uint8_t* buf, int len, int timeout,
   return 0;
 }
 
-// ISRs
+// ATTENTION:
+// Ensure that `huart->ErrorCode` only represents the errors detected in the current interrupt context,
+// not those from previous interrupts.
+// It's recommended that clear it at the beginning of the ISR (both UART and DMA).
+
+// ISR callbacks
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
   int fd = -1;
   int ec = 0;
@@ -117,7 +125,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
     // ATTENTION:
     // Calling `HAL_UART_Receive_IT()` will clear `ErrorCode`,
     // causing UART_IRQHandler to ignore some "blocking errors",
-    // it is okay because those errors have not been enabled.
+    // it is okay because those errors should never be triggered.
     HAL_UART_Receive_IT(huart, &al_uart_rx_bufs[fd], 1U);
   }
 }
