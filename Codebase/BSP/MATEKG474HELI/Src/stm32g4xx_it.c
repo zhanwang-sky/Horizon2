@@ -156,6 +156,8 @@ void DMA1_Channel7_IRQHandler(void) {
   * @retval None
   */
 void SPI1_IRQHandler(void) {
+  // ATTENTION:
+  // Configure SPI and DMA interrupts with the same preemption priority.
   HAL_SPI_IRQHandler(&hspi1);
 }
 

@@ -10,6 +10,10 @@
 
 #if (BSP_NR_PWMs > 0)
 
+// ATTENTION:
+// The period of timer configured in BSP should be 50 Hz,
+// and the resolution of pulse should be 1 us.
+
 // Functions
 int al_pwm_read(int fd, int* pulse) {
   TIM_HandleTypeDef* htim = NULL;
@@ -28,7 +32,7 @@ int al_pwm_read(int fd, int* pulse) {
 
   // read register
   if (pulse) {
-    *pulse = __HAL_TIM_GET_COMPARE(htim, ch);
+    *pulse = (int) __HAL_TIM_GET_COMPARE(htim, ch);
   }
 
   return 0;
@@ -55,7 +59,7 @@ int al_pwm_write(int fd, int pulse) {
   }
 
   // write register
-  __HAL_TIM_SET_COMPARE(htim, ch, pulse);
+  __HAL_TIM_SET_COMPARE(htim, ch, (uint32_t) pulse);
 
   return 0;
 }

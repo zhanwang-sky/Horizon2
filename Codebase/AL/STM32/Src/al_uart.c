@@ -10,14 +10,15 @@
 
 #if (BSP_NR_UARTs > 0)
 
+// ATTENTION:
+// The `word length` configured in BSP should be exactly 8-bit,
+// shorter or longer will cause unpredictable error.
+
 // Private variables
 static SemaphoreHandle_t al_uart_rx_bus_semphrs[BSP_NR_UARTs];
 static SemaphoreHandle_t al_uart_tx_bus_semphrs[BSP_NR_UARTs];
 static al_uart_cb_t al_uart_rx_callbacks[BSP_NR_UARTs];
 static al_uart_cb_t al_uart_tx_callbacks[BSP_NR_UARTs];
-// ATTENTION:
-// The `word length` configured in BSP should be exactly 8-bit,
-// shorter or longer will cause unpredictable error.
 static uint8_t al_uart_rx_bufs[BSP_NR_UARTs];
 static void* al_uart_tx_params[BSP_NR_UARTs];
 
@@ -60,13 +61,17 @@ int al_uart_start_receiving(int fd, al_uart_cb_t cb) {
   return 0;
 }
 
-int al_uart_async_send(int fd, const uint8_t* buf, int len, int timeout,
-                       al_uart_cb_t cb, void* param) {
+int al_uart_async_send(int fd, const uint8_t* buf, int len,
+                       int timeout, al_uart_cb_t cb, void* param) {
   UART_HandleTypeDef* huart = NULL;
   TickType_t ticks2wait = 0;
 
   // sanity check
   if (fd < 0 || fd >= BSP_NR_UARTs || !buf || len <= 0) {
+    return AL_ERROR_SANITY;
+  }
+  // addr overflow check
+  if ((UINTPTR_MAX - (uintptr_t) buf) < len) {
     return AL_ERROR_SANITY;
   }
 

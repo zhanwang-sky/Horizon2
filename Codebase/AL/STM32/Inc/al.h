@@ -22,6 +22,10 @@
 #include "al_uart.h"
 #endif
 
+#if (BSP_NR_SPIs > 0)
+#include "al_spi.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

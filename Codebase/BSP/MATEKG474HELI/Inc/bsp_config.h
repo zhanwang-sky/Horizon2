@@ -83,10 +83,38 @@ do { \
   } \
 } while (0)
 
+#define BSP_SPI_FD2HANDLE(FD, HANDLE) \
+do { \
+  if ((FD) == 0) { \
+    HANDLE = &hspi1; \
+  } \
+} while (0)
+
+#define BSP_SPI_HANDLE2FD(HANDLE, FD) \
+do { \
+  if ((HANDLE) == &hspi1) { \
+    FD = 0; \
+  } \
+} while (0)
+
+#define BSP_SPI_CS2PORTPIN(CS, PORT, PIN) \
+do { \
+  if ((CS) == 0) { \
+    PORT = GPIOB; \
+    PIN = GPIO_PIN_6; \
+  } \
+} while (0)
+
+#define BSP_SPI_HANDLE_ERROR(HANDLE) \
+do { \
+  HAL_NVIC_SystemReset(); \
+} while (0)
+
 // Global variables
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern SPI_HandleTypeDef hspi1;
 
 // Function prototypes
 void BSP_MCU_Init(void);

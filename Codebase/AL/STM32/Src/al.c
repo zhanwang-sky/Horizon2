@@ -27,5 +27,6 @@ void al_init(void) {
 
 #if (BSP_NR_SPIs > 0)
   BSP_SPI_Init();
+  al_spi_init();
 #endif
 }
