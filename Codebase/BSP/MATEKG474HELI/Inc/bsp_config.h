@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 // Definitions
-#define BSP_NR_GPIOs (2)
+#define BSP_NR_GPIOs (3)
 #define BSP_NR_PWMs  (4)
 #define BSP_NR_UARTs (2)
 #define BSP_NR_SPIs  (1)
@@ -32,6 +32,10 @@ do { \
     /* PC15 */ \
     PORT = GPIOC; \
     PIN = GPIO_PIN_15; \
+  } else if ((FD) == 2) { \
+    /* PB9 */ \
+    PORT = GPIOB; \
+    PIN = GPIO_PIN_9; \
   } \
 } while (0)
 

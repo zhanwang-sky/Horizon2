@@ -14,6 +14,10 @@
 #include "task.h"
 #include "semphr.h"
 
+#if (BSP_NR_GPIOs > 0)
+#include "al_gpio.h"
+#endif
+
 #if (BSP_NR_PWMs > 0)
 #include "al_pwm.h"
 #endif

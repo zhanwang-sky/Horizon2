@@ -129,6 +129,26 @@ void test_pwm(void* param) {
   }
 }
 
+void test_gpio(void* param) {
+  TickType_t last_wake;
+
+  al_gpio_set(1, false);
+
+  last_wake = xTaskGetTickCount();
+  for (uint32_t i = 0; ; ++i) {
+    vTaskDelayUntil(&last_wake, 100 / portTICK_PERIOD_MS);
+    if (i % 2 == 0) {
+      al_gpio_toggle(0);
+    }
+    if (i % 3 == 0) {
+      al_gpio_toggle(1);
+    }
+    if (i % 5 == 0) {
+      al_gpio_toggle(2);
+    }
+  }
+}
+
 int main(void) {
   BaseType_t xReturned = pdPASS;
 
@@ -150,6 +170,14 @@ int main(void) {
                           "TEST PWM",
                           configMINIMAL_STACK_SIZE,
                           &servo_movement_period,
+                          1,
+                          NULL);
+  configASSERT(xReturned == pdPASS);
+
+  xReturned = xTaskCreate(test_gpio,
+                          "TEST GPIO",
+                          configMINIMAL_STACK_SIZE,
+                          NULL,
                           1,
                           NULL);
   configASSERT(xReturned == pdPASS);
