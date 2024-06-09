@@ -15,6 +15,8 @@
 // and the resolution of pulse should be 1 us.
 
 // Functions
+void al_pwm_init(void) { }
+
 int al_pwm_read(int fd, int* pulse) {
   TIM_HandleTypeDef* htim = NULL;
   uint32_t ch = 0U;

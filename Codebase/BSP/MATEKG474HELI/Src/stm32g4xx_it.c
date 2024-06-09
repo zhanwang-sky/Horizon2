@@ -137,14 +137,18 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 /**
-  * @brief This function handles DMA1 channel6 global interrupt.
+  * @brief  This function handles DMA1 channel6 global interrupt.
+  * @param  None
+  * @retval None
   */
 void DMA1_Channel6_IRQHandler(void) {
   HAL_DMA_IRQHandler(&hdma_spi1_rx);
 }
 
 /**
-  * @brief This function handles DMA1 channel7 global interrupt.
+  * @brief  This function handles DMA1 channel7 global interrupt.
+  * @param  None
+  * @retval None
   */
 void DMA1_Channel7_IRQHandler(void) {
   HAL_DMA_IRQHandler(&hdma_spi1_tx);
@@ -202,4 +206,13 @@ void USART2_IRQHandler(void) {
 void USART3_IRQHandler(void) {
   huart3.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_UART_IRQHandler(&huart3);
+}
+
+/**
+  * @brief  This function handles EXTI line[9:5] interrupts.
+  * @param  None
+  * @retval None
+  */
+void EXTI9_5_IRQHandler(void) {
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
 }

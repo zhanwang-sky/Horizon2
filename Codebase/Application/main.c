@@ -132,7 +132,7 @@ void test_pwm(void* param) {
 void test_gpio(void* param) {
   TickType_t last_wake;
 
-  al_gpio_set(1, false);
+  al_gpio_set(0, false);
 
   last_wake = xTaskGetTickCount();
   for (uint32_t i = 0; ; ++i) {
@@ -144,7 +144,7 @@ void test_gpio(void* param) {
       al_gpio_toggle(1);
     }
     if (i % 5 == 0) {
-      al_gpio_toggle(2);
+      al_gpio_set(2, (i % 2 == 0));
     }
   }
 }

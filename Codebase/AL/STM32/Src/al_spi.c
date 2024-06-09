@@ -89,7 +89,7 @@ int al_spi_async_read_write(int fd, int cs, uint8_t* rx_buf, uint8_t* tx_buf, in
   // Before calling `HAL_SPI_TransmitReceive_DMA`, check whether it correctly
   // sets the DMA error callbacks for both RX and TX channels. If not, correct it!
   if (HAL_SPI_TransmitReceive_DMA(hspi, tx_buf, rx_buf, (uint16_t) len) != HAL_OK) {
-    HAL_GPIO_TogglePin(nss_port, nss_pin);
+    HAL_GPIO_WritePin(nss_port, nss_pin, GPIO_PIN_SET);
     xSemaphoreGive(al_spi_bus_semphrs[fd]);
     return AL_ERROR_HAL;
   }
@@ -109,7 +109,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
   if (fd >= 0 && fd < BSP_NR_SPIs) {
     BSP_SPI_CS2PORTPIN(al_spi_cs_maps[fd], nss_port, nss_pin);
     if (nss_port != NULL) {
-      HAL_GPIO_TogglePin(nss_port, nss_pin);
+      HAL_GPIO_WritePin(nss_port, nss_pin, GPIO_PIN_SET);
     }
     if (al_spi_callbacks[fd]) {
       al_spi_callbacks[fd](fd, 0, al_spi_cb_params[fd]);
@@ -133,7 +133,7 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef* hspi) {
   if (fd >= 0 && fd < BSP_NR_SPIs) {
     BSP_SPI_CS2PORTPIN(al_spi_cs_maps[fd], nss_port, nss_pin);
     if (nss_port != NULL) {
-      HAL_GPIO_TogglePin(nss_port, nss_pin);
+      HAL_GPIO_WritePin(nss_port, nss_pin, GPIO_PIN_SET);
     }
     if (al_spi_callbacks[fd]) {
       al_spi_callbacks[fd](fd, -1, al_spi_cb_params[fd]);

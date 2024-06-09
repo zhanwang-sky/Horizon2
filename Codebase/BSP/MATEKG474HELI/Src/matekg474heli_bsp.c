@@ -59,10 +59,10 @@ static void SystemDMA_Config(void) {
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
   /* DMA1_Channel6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
@@ -99,9 +99,10 @@ void BSP_GPIO_Init(void) {
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-    /* Set GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);
   /* Configure GPIO pins */
+  /* Set GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);
+  /* resource BEEPER 1 B09 */
   GPIO_InitStruct.Pin = GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -110,12 +111,31 @@ void BSP_GPIO_Init(void) {
 
   /* Set GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14 | GPIO_PIN_15, GPIO_PIN_SET);
-  /* Configure GPIO pins */
+  /* resource LED 1 C14 */
+  /* resource LED 2 C15 */
   GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+
+void BSP_EXTI_Init(void) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* Enable clocks */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /* Configure EXTI pins */
+  /* resource GYRO_EXTI 1 B07 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init */
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
 void BSP_PWM_Init(void) {
@@ -219,10 +239,10 @@ void BSP_UART_Init(void) {
   assert_param(status == HAL_OK);
 
   /* Enable UART2 interrupts */
-  HAL_NVIC_SetPriority(USART2_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_SetPriority(USART2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* Enable UART3 interrupts */
-  HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
+  HAL_NVIC_SetPriority(USART3_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(USART3_IRQn);
 }
 

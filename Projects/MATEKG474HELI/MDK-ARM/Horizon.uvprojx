@@ -400,6 +400,11 @@
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al.c</FilePath>
             </File>
             <File>
+              <FileName>al_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\AL\STM32\Src\al_exti.c</FilePath>
+            </File>
+            <File>
               <FileName>al_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al_gpio.c</FilePath>

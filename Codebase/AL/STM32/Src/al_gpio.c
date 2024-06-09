@@ -10,7 +10,13 @@
 
 #if (BSP_NR_GPIOs > 0)
 
+// ATTENTION:
+// `al_gpio_toggle` does not guarantee atomic execution of operations,
+// which may result in other pin states being inconsistent with expectations.
+
 // Functions
+void al_gpio_init(void) { }
+
 int al_gpio_get(int fd, bool* state) {
   GPIO_TypeDef* port = NULL;
   uint16_t pin = 0U;
@@ -70,7 +76,7 @@ int al_gpio_toggle(int fd) {
     return AL_ERROR_BSP;
   }
 
-  // write register
+  // read-modify-write
   HAL_GPIO_TogglePin(port, pin);
 
   return 0;

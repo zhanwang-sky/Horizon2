@@ -18,6 +18,10 @@
 #include "al_gpio.h"
 #endif
 
+#if (BSP_NR_EXTIs > 0)
+#include "al_exti.h"
+#endif
+
 #if (BSP_NR_PWMs > 0)
 #include "al_pwm.h"
 #endif

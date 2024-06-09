@@ -13,8 +13,9 @@ extern "C" {
 #endif
 
 // Function prototypes
-int al_pwm_read(int fd, int* pulse);
+void al_pwm_init(void);
 
+int al_pwm_read(int fd, int* pulse);
 int al_pwm_write(int fd, int pulse);
 
 #ifdef __cplusplus

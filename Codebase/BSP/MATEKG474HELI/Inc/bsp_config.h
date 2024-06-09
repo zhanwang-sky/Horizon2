@@ -17,6 +17,7 @@ extern "C" {
 
 // Definitions
 #define BSP_NR_GPIOs (3)
+#define BSP_NR_EXTIs (1)
 #define BSP_NR_PWMs  (4)
 #define BSP_NR_UARTs (2)
 #define BSP_NR_SPIs  (1)
@@ -36,6 +37,13 @@ do { \
     /* PB9 */ \
     PORT = GPIOB; \
     PIN = GPIO_PIN_9; \
+  } \
+} while (0)
+
+#define BSP_EXTI_PIN2FD(PIN, FD) \
+do { \
+  if ((PIN) == GPIO_PIN_7) { \
+    FD = 0; \
   } \
 } while (0)
 
@@ -123,6 +131,7 @@ extern SPI_HandleTypeDef hspi1;
 // Function prototypes
 void BSP_MCU_Init(void);
 void BSP_GPIO_Init(void);
+void BSP_EXTI_Init(void);
 void BSP_PWM_Init(void);
 void BSP_UART_Init(void);
 void BSP_SPI_Init(void);

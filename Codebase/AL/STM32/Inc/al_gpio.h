@@ -16,6 +16,8 @@ extern "C" {
 #endif
 
 // Function prototypes
+void al_gpio_init(void);
+
 int al_gpio_get(int fd, bool* state);
 int al_gpio_set(int fd, bool state);
 int al_gpio_toggle(int fd);
