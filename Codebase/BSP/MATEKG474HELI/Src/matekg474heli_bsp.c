@@ -13,6 +13,7 @@ DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
+ADC_HandleTypeDef hadc1;
 TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -90,6 +91,51 @@ void BSP_MCU_Init(void) {
 
   /* Configure DMA controller */
   SystemDMA_Config();
+}
+
+void BSP_ADC_Init(void) {
+  ADC_ChannelConfTypeDef sConfig = {0};
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Enable clocks */
+  __HAL_RCC_ADC12_CLK_ENABLE();
+
+  /* Init ADC1 */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.GainCompensation = 0U;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.NbrOfConversion = 1U;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.SamplingMode = ADC_SAMPLING_MODE_NORMAL;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+  hadc1.Init.OversamplingMode = ENABLE;
+  hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
+  hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
+  hadc1.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
+  hadc1.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
+  status = HAL_ADC_Init(&hadc1);
+  assert_param(status == HAL_OK);
+  /* Configure channels */
+  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR_ADC1;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0U;
+  status = HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+  assert_param(status == HAL_OK);
+  /* Start calibration */
+  status = HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+  assert_param(status == HAL_OK);
 }
 
 void BSP_GPIO_Init(void) {

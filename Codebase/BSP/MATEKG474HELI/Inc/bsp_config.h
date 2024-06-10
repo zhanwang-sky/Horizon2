@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 // Definitions
+#define BSP_NR_ADCs  (1)
 #define BSP_NR_GPIOs (3)
 #define BSP_NR_EXTIs (1)
 #define BSP_NR_PWMs  (4)
@@ -130,6 +131,7 @@ extern SPI_HandleTypeDef hspi1;
 
 // Function prototypes
 void BSP_MCU_Init(void);
+void BSP_ADC_Init(void);
 void BSP_GPIO_Init(void);
 void BSP_EXTI_Init(void);
 void BSP_PWM_Init(void);

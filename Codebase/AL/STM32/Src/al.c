@@ -12,6 +12,10 @@
 void al_init(void) {
   BSP_MCU_Init();
 
+#if (BSP_NR_ADCs > 0)
+  BSP_ADC_Init();
+#endif
+
 #if (BSP_NR_GPIOs > 0)
   BSP_GPIO_Init();
   al_gpio_init();
