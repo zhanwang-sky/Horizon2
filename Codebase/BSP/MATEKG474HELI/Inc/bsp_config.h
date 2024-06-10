@@ -24,6 +24,24 @@ extern "C" {
 #define BSP_NR_SPIs  (1)
 
 // Macros
+#define BSP_ADC_FD2PDATA(FD, PDATA) \
+do { \
+  if ((FD) == 0) { \
+    PDATA = &adc1_data[0]; \
+  } else if ((FD) == 1) { \
+    PDATA = &adc2_data[0]; \
+  } else if ((FD) == 2) { \
+    PDATA = &adc2_data[1]; \
+  } \
+} while (0)
+
+#define BSP_ADC_CALCULATE_VALUE(FD, DATA) \
+( \
+((FD) == 0) ? \
+((float)__HAL_ADC_CALC_TEMPERATURE((VDD_VALUE), (DATA), (ADC_RESOLUTION_12B))) : \
+(((float)(DATA)) * ((float)(VDD_VALUE)) / 4095000.f) \
+)
+
 #define BSP_GPIO_FD2PORTPIN(FD, PORT, PIN) \
 do { \
   if ((FD) == 0) { \
@@ -128,6 +146,9 @@ extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern SPI_HandleTypeDef hspi1;
+
+extern volatile uint32_t adc1_data[1];
+extern volatile uint32_t adc2_data[2];
 
 // Function prototypes
 void BSP_MCU_Init(void);

@@ -14,6 +14,10 @@
 #include "task.h"
 #include "semphr.h"
 
+#if (BSP_NR_ADCs > 0)
+#include "al_analog.h"
+#endif
+
 #if (BSP_NR_GPIOs > 0)
 #include "al_gpio.h"
 #endif

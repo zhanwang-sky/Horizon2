@@ -14,6 +14,7 @@ void al_init(void) {
 
 #if (BSP_NR_ADCs > 0)
   BSP_ADC_Init();
+  al_analog_init();
 #endif
 
 #if (BSP_NR_GPIOs > 0)

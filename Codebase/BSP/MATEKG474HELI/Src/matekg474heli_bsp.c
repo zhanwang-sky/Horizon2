@@ -22,6 +22,9 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 SPI_HandleTypeDef hspi1;
 
+volatile uint32_t adc1_data[1];
+volatile uint32_t adc2_data[2];
+
 // Functions
 static void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -140,6 +143,9 @@ void BSP_ADC_Init(void) {
   /* Start calibration */
   status = HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
   assert_param(status == HAL_OK);
+  /* Start conversion */
+  status = HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc1_data, 1U);
+  assert_param(status == HAL_OK);
 
   /* Init ADC2 */
   hadc2.Instance = ADC2;
@@ -182,6 +188,9 @@ void BSP_ADC_Init(void) {
   assert_param(status == HAL_OK);
   /* Start calibration */
   status = HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+  assert_param(status == HAL_OK);
+  /* Start conversion */
+  status = HAL_ADC_Start_DMA(&hadc2, (uint32_t*) adc2_data, 2U);
   assert_param(status == HAL_OK);
 }
 
