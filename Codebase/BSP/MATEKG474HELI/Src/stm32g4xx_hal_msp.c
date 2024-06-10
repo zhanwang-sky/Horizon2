@@ -24,6 +24,8 @@ extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
+extern DMA_HandleTypeDef hdma_adc1;
+extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -43,6 +45,32 @@ void HAL_MspInit(void) {
 
   /* Disable the internal Pull-Up in Dead Battery pins of UCPD peripheral */
   HAL_PWREx_DisableUCPDDeadBattery();
+}
+
+/**
+  * @brief  Initialize the ADC MSP.
+  * @param  hadc ADC handle
+  * @retval None
+  */
+void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (hadc == &hadc1) {
+    /* ADC1 DMA Init */
+    hdma_adc1.Instance = DMA2_Channel1;
+    hdma_adc1.Init.Request = DMA_REQUEST_ADC1;
+    hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_adc1.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_adc1.Init.Mode = DMA_CIRCULAR;
+    hdma_adc1.Init.Priority = DMA_PRIORITY_LOW;
+    status = HAL_DMA_Init(&hdma_adc1);
+    assert_param(status == HAL_OK);
+    /* link peripheral to DMA channel */
+    __HAL_LINKDMA(hadc, DMA_Handle, hdma_adc1);
+  }
 }
 
 /**
@@ -113,7 +141,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
     hdma_uart2_tx.Init.Priority = DMA_PRIORITY_LOW;
     status = HAL_DMA_Init(&hdma_uart2_tx);
     assert_param(status == HAL_OK);
-
+    /* link peripheral to DMA channel */
     __HAL_LINKDMA(huart, hdmatx, hdma_uart2_tx);
   } else if (huart == &huart3) {
     /* Enable GPIO clock */
@@ -145,7 +173,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
     hdma_uart3_tx.Init.Priority = DMA_PRIORITY_LOW;
     status = HAL_DMA_Init(&hdma_uart3_tx);
     assert_param(status == HAL_OK);
-
+    /* link peripheral to DMA channel */
     __HAL_LINKDMA(huart, hdmatx, hdma_uart3_tx);
   }
 }
@@ -195,6 +223,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     hdma_spi1_rx.Init.Priority = DMA_PRIORITY_HIGH;
     status = HAL_DMA_Init(&hdma_spi1_rx);
     assert_param(status == HAL_OK);
+    /* link peripheral to DMA channel */
     __HAL_LINKDMA(hspi, hdmarx, hdma_spi1_rx);
     /* SPI1_TX */
     hdma_spi1_tx.Instance = DMA1_Channel7;
@@ -208,6 +237,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     hdma_spi1_tx.Init.Priority = DMA_PRIORITY_HIGH;
     status = HAL_DMA_Init(&hdma_spi1_tx);
     assert_param(status == HAL_OK);
+    /* link peripheral to DMA channel */
     __HAL_LINKDMA(hspi, hdmatx, hdma_spi1_tx);
   }
 }

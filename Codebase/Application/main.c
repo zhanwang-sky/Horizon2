@@ -151,22 +151,23 @@ void test_gpio(void* param) {
 }
 
 void test_adc(void* param) {
-  uint32_t adc_val;
+  volatile uint32_t adc_data;
   int32_t temp;
   char msg_buf[48];
   int msg_len;
   TickType_t last_wake;
 
-  HAL_ADC_Start(&hadc1);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &adc_data, 1U);
 
   last_wake = xTaskGetTickCount();
   for (uint32_t i = 0; ; ++i) {
+    uint32_t adc_val;
     vTaskDelayUntil(&last_wake, 500 / portTICK_PERIOD_MS);
 
-    adc_val = HAL_ADC_GetValue(&hadc1);
+    adc_val = adc_data;
     temp = __HAL_ADC_CALC_TEMPERATURE(VDD_VALUE, adc_val, ADC_RESOLUTION_12B);
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                       "(%d) ADC_DATA=%u TEMP=%d\r\n",
+                       "(%d) ADC_VAL=%u TEMP=%d\r\n",
                        i, adc_val, temp);
     al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
   }
