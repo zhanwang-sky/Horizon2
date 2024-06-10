@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 // Definitions
-#define BSP_NR_ADCs  (1)
+#define BSP_NR_ADCs  (3)
 #define BSP_NR_GPIOs (3)
 #define BSP_NR_EXTIs (1)
 #define BSP_NR_PWMs  (4)

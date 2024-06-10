@@ -95,6 +95,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     hdma_adc2.Init.Mode = DMA_CIRCULAR;
     hdma_adc2.Init.Priority = DMA_PRIORITY_LOW;
     status = HAL_DMA_Init(&hdma_adc2);
+    assert_param(status == HAL_OK);
     /* link peripheral to DMA channel */
     __HAL_LINKDMA(hadc, DMA_Handle, hdma_adc2);
   }
