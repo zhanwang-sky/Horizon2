@@ -14,6 +14,7 @@
 SemaphoreHandle_t spi_done;
 float servo_movement_period = 3.f;
 extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
 
 // Functions
 void spi_cb(int fd, int ec, void* param) {
@@ -151,24 +152,26 @@ void test_gpio(void* param) {
 }
 
 void test_adc(void* param) {
-  volatile uint32_t adc_data;
+  static volatile uint32_t adc1_data[1];
+  static volatile uint32_t adc2_data[2];
+  uint32_t temp_data;
   int32_t temp;
-  char msg_buf[48];
+  char msg_buf[64];
   int msg_len;
   TickType_t last_wake;
 
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &adc_data, 1U);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc1_data, 1U);
+  HAL_ADC_Start_DMA(&hadc2, (uint32_t*) adc2_data, 2U);
 
   last_wake = xTaskGetTickCount();
   for (uint32_t i = 0; ; ++i) {
-    uint32_t adc_val;
     vTaskDelayUntil(&last_wake, 500 / portTICK_PERIOD_MS);
 
-    adc_val = adc_data;
-    temp = __HAL_ADC_CALC_TEMPERATURE(VDD_VALUE, adc_val, ADC_RESOLUTION_12B);
+    temp_data = adc1_data[0];
+    temp = __HAL_ADC_CALC_TEMPERATURE(VDD_VALUE, temp_data, ADC_RESOLUTION_12B);
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                       "(%d) ADC_VAL=%u TEMP=%d\r\n",
-                       i, adc_val, temp);
+                       "(%d) TEMP_DATA=%u TEMP=%d | ADC2_CH1=%u ADC2_CH2=%u\r\n",
+                       i, temp_data, temp, adc2_data[0], adc2_data[1]);
     al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
   }
 }

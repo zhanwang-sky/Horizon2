@@ -14,7 +14,9 @@ DMA_HandleTypeDef hdma_uart3_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_adc1;
+DMA_HandleTypeDef hdma_adc2;
 ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
 TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -137,6 +139,49 @@ void BSP_ADC_Init(void) {
   assert_param(status == HAL_OK);
   /* Start calibration */
   status = HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+  assert_param(status == HAL_OK);
+
+  /* Init ADC2 */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc2.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.GainCompensation = 0U;
+  hadc2.Init.ScanConvMode = ADC_SCAN_ENABLE;
+  hadc2.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  hadc2.Init.LowPowerAutoWait = DISABLE;
+  hadc2.Init.ContinuousConvMode = ENABLE;
+  hadc2.Init.NbrOfConversion = 2U;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc2.Init.SamplingMode = ADC_SAMPLING_MODE_NORMAL;
+  hadc2.Init.DMAContinuousRequests = ENABLE;
+  hadc2.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+  hadc2.Init.OversamplingMode = ENABLE;
+  hadc2.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
+  hadc2.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_8;
+  hadc2.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
+  hadc2.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
+  status = HAL_ADC_Init(&hadc2);
+  assert_param(status == HAL_OK);
+  /* Configure channels */
+  /* Channel 1 */
+  sConfig.Channel = ADC_CHANNEL_17;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0U;
+  status = HAL_ADC_ConfigChannel(&hadc2, &sConfig);
+  assert_param(status == HAL_OK);
+  /* Channel 2 */
+  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  status = HAL_ADC_ConfigChannel(&hadc2, &sConfig);
+  assert_param(status == HAL_OK);
+  /* Start calibration */
+  status = HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
   assert_param(status == HAL_OK);
 }
 

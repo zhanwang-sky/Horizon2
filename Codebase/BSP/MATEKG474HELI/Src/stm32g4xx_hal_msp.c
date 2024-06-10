@@ -25,7 +25,9 @@ extern DMA_HandleTypeDef hdma_uart3_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_adc1;
+extern DMA_HandleTypeDef hdma_adc2;
 extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -53,6 +55,7 @@ void HAL_MspInit(void) {
   * @retval None
   */
 void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
   HAL_StatusTypeDef status = HAL_OK;
 
   if (hadc == &hadc1) {
@@ -70,6 +73,30 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     assert_param(status == HAL_OK);
     /* link peripheral to DMA channel */
     __HAL_LINKDMA(hadc, DMA_Handle, hdma_adc1);
+  } else if (hadc == &hadc2) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource ADC_BATT 1 A04 */
+    /* resource ADC_CURR 1 A05 */
+    GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* ADC2 DMA Init */
+    hdma_adc2.Instance = DMA2_Channel2;
+    hdma_adc2.Init.Request = DMA_REQUEST_ADC2;
+    hdma_adc2.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_adc2.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_adc2.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_adc2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_adc2.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_adc2.Init.Mode = DMA_CIRCULAR;
+    hdma_adc2.Init.Priority = DMA_PRIORITY_LOW;
+    status = HAL_DMA_Init(&hdma_adc2);
+    /* link peripheral to DMA channel */
+    __HAL_LINKDMA(hadc, DMA_Handle, hdma_adc2);
   }
 }
 
