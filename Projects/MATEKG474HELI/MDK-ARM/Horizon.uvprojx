@@ -382,12 +382,12 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>Application</GroupName>
+          <GroupName>Applications</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Codebase\Application\main.c</FilePath>
+              <FilePath>..\..\..\Codebase\Applications\main.c</FilePath>
             </File>
           </Files>
         </Group>

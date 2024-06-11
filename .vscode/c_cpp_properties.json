@@ -3,7 +3,7 @@
         {
             "name": "MATEKG474HELI",
             "includePath": [
-                "${workspaceFolder}/Codebase/Application",
+                "${workspaceFolder}/Codebase/Applications",
                 "${workspaceFolder}/Codebase/AL/STM32/Inc",
                 "${workspaceFolder}/Codebase/FreeRTOS/Include",
                 "${workspaceFolder}/Codebase/FreeRTOS/portable/GCC/ARM_CM4F",
