@@ -10,11 +10,14 @@
 #include <stdio.h>
 #include "al.h"
 
+// Definitions
+#define MAX_TASKS 64
+
 // Global variables
+TaskHandle_t tasks[MAX_TASKS];
+int nr_tasks = 0;
 SemaphoreHandle_t spi_done;
 float servo_movement_period = 3.f;
-extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc2;
 
 // Functions
 void spi_cb(int fd, int ec, void* param) {
@@ -23,6 +26,7 @@ void spi_cb(int fd, int ec, void* param) {
   portYIELD_FROM_ISR(should_yield);
 }
 
+// Tasks
 void test_spi(void* param) {
   // ICM-42688-P registers
   static const uint8_t DEVICE_CONFIG = 0x11;
@@ -145,16 +149,14 @@ void test_gpio(void* param) {
     if (i % 3 == 0) {
       al_gpio_toggle(1);
     }
-    if (i % 5 == 0) {
-      al_gpio_set(2, (i % 2 == 0));
-    }
   }
 }
 
 void test_adc(void* param) {
   TickType_t last_wake;
-  float adc_values[3];
-  int adc_data[3];
+  float temp;
+  float vbat;
+  int curr;
   char msg_buf[64];
   int msg_len;
 
@@ -162,25 +164,60 @@ void test_adc(void* param) {
   for (uint32_t i = 0; ; ++i) {
     vTaskDelayUntil(&last_wake, 500 / portTICK_PERIOD_MS);
 
-    if (i % 10 == 0) {
-      for (int i = 0; i < 3; ++i) {
-        al_analog_read_raw(i, &adc_data[i]);
-      }
-      msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                         "(%d) ADC_0=%d ADC_1=%d ADC_2=%d\r\n",
-                         i, adc_data[0], adc_data[1], adc_data[2]);
-    } else {
-      for (int i = 0; i < 3; ++i) {
-        al_analog_read(i, &adc_values[i]);
-      }
-      msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                         "(%d) temp=%.3f | batt=%.3f curr=%.3f\r\n",
-                         i, adc_values[0], adc_values[1], adc_values[2]);
-    }
+    al_analog_read(0, &temp);
+    al_analog_read(1, &vbat);
+    al_analog_read_raw(2, &curr);
+    msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                       "(%d) temp=%.0f vbat=%.3f curr=%d\r\n",
+                       i, temp, vbat, curr);
     al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
   }
 }
 
+void timer_task(void* param) {
+  static char msg_buf[512];
+  int msg_len;
+  TickType_t last_wake;
+  TaskHandle_t h_idle;
+  UBaseType_t stack_water_mark;
+  size_t free_heap_size;
+
+  last_wake = xTaskGetTickCount();
+
+  while (1) {
+    msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                       "----------\r\n"
+                       "Stack water marker(word):\r\n");
+    for (int i = 0; i < nr_tasks; ++i) {
+      stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);
+      msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
+                          "%s: %lu\r\n",
+                          pcTaskGetName(tasks[i]),
+                          stack_water_mark);
+    }
+    h_idle = xTaskGetIdleTaskHandle();
+    stack_water_mark = uxTaskGetStackHighWaterMark(h_idle);
+    msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
+                        "%s: %lu\r\n",
+                        pcTaskGetName(h_idle),
+                        stack_water_mark);
+    free_heap_size = xPortGetFreeHeapSize();
+    msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
+                        "Free heap size(byte): %zu\r\n"
+                        "\r\n",
+                        free_heap_size);
+    al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+
+    vTaskDelayUntil(&last_wake, 10000 / portTICK_PERIOD_MS);
+  }
+}
+
+// FreeRTOS callbacks
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+  al_gpio_set(2, true);
+}
+
+// Entry point
 int main(void) {
   BaseType_t xReturned = pdPASS;
 
@@ -192,18 +229,18 @@ int main(void) {
   // create tasks
   xReturned = xTaskCreate(test_spi,
                           "TEST SPI",
-                          configMINIMAL_STACK_SIZE,
+                          192,
                           NULL,
                           3,
-                          NULL);
+                          &tasks[nr_tasks++]);
   configASSERT(xReturned == pdPASS);
 
   xReturned = xTaskCreate(test_pwm,
                           "TEST PWM",
-                          configMINIMAL_STACK_SIZE,
+                          192,
                           &servo_movement_period,
                           1,
-                          NULL);
+                          &tasks[nr_tasks++]);
   configASSERT(xReturned == pdPASS);
 
   xReturned = xTaskCreate(test_gpio,
@@ -211,15 +248,23 @@ int main(void) {
                           configMINIMAL_STACK_SIZE,
                           NULL,
                           1,
-                          NULL);
+                          &tasks[nr_tasks++]);
   configASSERT(xReturned == pdPASS);
 
   xReturned = xTaskCreate(test_adc,
                           "TEST ADC",
-                          configMINIMAL_STACK_SIZE,
+                          192,
                           NULL,
                           1,
-                          NULL);
+                          &tasks[nr_tasks++]);
+  configASSERT(xReturned == pdPASS);
+
+  xReturned = xTaskCreate(timer_task,
+                          "TIMER TASK",
+                          192,
+                          NULL,
+                          tskIDLE_PRIORITY + 1,
+                          &tasks[nr_tasks++]);
   configASSERT(xReturned == pdPASS);
 
   // start scheduler
