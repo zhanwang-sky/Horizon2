@@ -470,6 +470,11 @@
               <FilePath>..\..\..\Codebase\BSP\MATEKG474HELI\Src\matekg474heli_bsp.c</FilePath>
             </File>
             <File>
+              <FileName>startup_stm32g474xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\..\Codebase\BSP\MATEKG474HELI\Src\startup_stm32g474xx.s</FilePath>
+            </File>
+            <File>
               <FileName>stm32g4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\BSP\MATEKG474HELI\Src\stm32g4xx_hal_msp.c</FilePath>
@@ -489,11 +494,6 @@
         <Group>
           <GroupName>Drivers/CMSIS</GroupName>
           <Files>
-            <File>
-              <FileName>startup_stm32g474xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\..\..\Codebase\Drivers\CMSIS\Device\ST\STM32G4xx\Source\Templates\arm\startup_stm32g474xx.s</FilePath>
-            </File>
             <File>
               <FileName>system_stm32g4xx.c</FileName>
               <FileType>1</FileType>
