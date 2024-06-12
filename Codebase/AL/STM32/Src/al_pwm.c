@@ -11,8 +11,7 @@
 #if (BSP_NR_PWMs > 0)
 
 // ATTENTION:
-// The period of timer configured in BSP should be 50 Hz,
-// and the resolution of pulse should be 1 us.
+// The timer configured in BSP should have a period of 50 Hz with a resolution of 1 us.
 
 // Functions
 void al_pwm_init(void) { }

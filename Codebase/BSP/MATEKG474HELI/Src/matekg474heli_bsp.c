@@ -17,6 +17,7 @@ DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc2;
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -60,22 +61,22 @@ static void SystemClock_Config(void) {
 }
 
 static void SystemDMA_Config(void) {
-  /* DMA controller clock enable */
+  /* Enable clocks */
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
+  /* Enable DMA interrupts */
+  /* DMA1_Channel1_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-  /* DMA1_Channel2_IRQn interrupt configuration */
+  /* DMA1_Channel2_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel6_IRQn interrupt configuration */
+  /* DMA1_Channel6_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-  /* DMA1_Channel7_IRQn interrupt configuration */
+  /* DMA1_Channel7_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 }
@@ -235,7 +236,7 @@ void BSP_EXTI_Init(void) {
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* EXTI interrupt init */
+  /* Enable EXTI interrupts */
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, SYSTICK_INT_PRIORITY - 1UL, 0U);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
@@ -248,27 +249,52 @@ void BSP_PWM_Init(void) {
   HAL_StatusTypeDef status = HAL_OK;
 
   /* Enable clocks */
+  __HAL_RCC_TIM2_CLK_ENABLE();
   __HAL_RCC_TIM3_CLK_ENABLE();
 
   /* Get clock configuration */
   HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
 
-  /* Compute TIM3 clock */
+  /* Compute TIM2/TIM3 clock */
   uwTimclock = HAL_RCC_GetPCLK1Freq();
   if (clkconfig.APB1CLKDivider != RCC_HCLK_DIV1) {
     uwTimclock <<= 1U;
   }
 
+  /* Init TIM2 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = (uwTimclock / 1000000U) - 1U; // 1 MHz counter clock (resolution: 1 us)
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = (1000000U / 50U) - 1U; // Period: 50 Hz
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  status = HAL_TIM_PWM_Init(&htim2);
+  assert_param(status == HAL_OK);
+  /* Configure channels */
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0U;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  status = HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2);
+  assert_param(status == HAL_OK);
+  /* Start output */
+  status = HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  assert_param(status == HAL_OK);
+  status = HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+  assert_param(status == HAL_OK);
+
   /* Init TIM3 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = (uwTimclock / 1000000U) - 1U; // 1 MHz counter clock (resolution in 1 us)
+  htim3.Init.Prescaler = (uwTimclock / 1000000U) - 1U; // 1 MHz counter clock (resolution: 1 us)
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = (1000000U / 50U) - 1U; // 50 Hz period
+  htim3.Init.Period = (1000000U / 50U) - 1U; // Period: 50 Hz
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   status = HAL_TIM_PWM_Init(&htim3);
   assert_param(status == HAL_OK);
-  /* Init channels */
+  /* Configure channels */
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0U;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;

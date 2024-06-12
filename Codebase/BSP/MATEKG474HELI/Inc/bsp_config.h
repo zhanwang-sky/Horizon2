@@ -19,7 +19,7 @@ extern "C" {
 #define BSP_NR_ADCs  (3)
 #define BSP_NR_GPIOs (3)
 #define BSP_NR_EXTIs (1)
-#define BSP_NR_PWMs  (4)
+#define BSP_NR_PWMs  (6)
 #define BSP_NR_UARTs (2)
 #define BSP_NR_SPIs  (1)
 
@@ -38,7 +38,7 @@ do { \
 #define BSP_ADC_CALCULATE_VALUE(FD, DATA) \
 ( \
 ((FD) == 0) ? \
-((float)__HAL_ADC_CALC_TEMPERATURE((VDD_VALUE), (DATA), (ADC_RESOLUTION_12B))) : \
+((float)(__HAL_ADC_CALC_TEMPERATURE((VDD_VALUE), (DATA), (ADC_RESOLUTION_12B)))) : \
 (((float)(DATA)) * ((float)(VDD_VALUE)) / 4095000.f) \
 )
 
@@ -79,6 +79,12 @@ do { \
     CH = TIM_CHANNEL_2; \
   } else if ((FD) == 3) { \
     HANDLE = &htim3; \
+    CH = TIM_CHANNEL_1; \
+  } else if ((FD) == 4) { \
+    HANDLE = &htim2; \
+    CH = TIM_CHANNEL_2; \
+  } else if ((FD) == 5) { \
+    HANDLE = &htim2; \
     CH = TIM_CHANNEL_1; \
   } \
 } while (0)
@@ -142,6 +148,7 @@ do { \
 } while (0)
 
 // Global variables
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;

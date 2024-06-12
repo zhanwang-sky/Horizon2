@@ -28,6 +28,7 @@ extern DMA_HandleTypeDef hdma_adc1;
 extern DMA_HandleTypeDef hdma_adc2;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -109,7 +110,20 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  if (htim == &htim3) {
+  if (htim == &htim2) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource MOTOR 1 A01 */
+    /* resource MOTOR 2 A00 */
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  } else if (htim == &htim3) {
     /* Enable GPIO clock */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
