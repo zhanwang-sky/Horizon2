@@ -159,6 +159,7 @@ void test_adc(void* param) {
   TickType_t last_wake;
   float temp;
   float vbat;
+  int temp_raw;
   int curr;
   char msg_buf[64];
   int msg_len;
@@ -168,11 +169,12 @@ void test_adc(void* param) {
     vTaskDelayUntil(&last_wake, 500 / portTICK_PERIOD_MS);
 
     al_analog_read(0, &temp);
+    al_analog_read_raw(0, &temp_raw);
     al_analog_read(1, &vbat);
     al_analog_read_raw(2, &curr);
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                       "(%d) temp=%.0f vbat=%.3f curr=%d\r\n",
-                       i, temp, vbat, curr);
+                       "(%d) temp=%.0f(%d) vbat=%.3f curr=%d\r\n",
+                       i, temp, temp_raw, vbat, curr);
     al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
   }
 }
@@ -190,7 +192,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: get temperature by accessing ADC register instead of initiating DMA requests\r\n"
+                       "new feature: change DMA channels\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);

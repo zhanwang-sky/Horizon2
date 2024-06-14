@@ -23,8 +23,8 @@
 extern TIM_HandleTypeDef htim6;
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
-extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
+extern DMA_HandleTypeDef hdma_spi1_rx;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern SPI_HandleTypeDef hspi1;
@@ -137,21 +137,21 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 /**
-  * @brief  This function handles DMA1 channel6 global interrupt.
+  * @brief  This function handles DMA2 channel1 global interrupt.
   * @param  None
   * @retval None
   */
-void DMA1_Channel6_IRQHandler(void) {
-  HAL_DMA_IRQHandler(&hdma_spi1_rx);
+void DMA2_Channel1_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_spi1_tx);
 }
 
 /**
-  * @brief  This function handles DMA1 channel7 global interrupt.
+  * @brief  This function handles DMA2 channel2 global interrupt.
   * @param  None
   * @retval None
   */
-void DMA1_Channel7_IRQHandler(void) {
-  HAL_DMA_IRQHandler(&hdma_spi1_tx);
+void DMA2_Channel2_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_spi1_rx);
 }
 
 /**

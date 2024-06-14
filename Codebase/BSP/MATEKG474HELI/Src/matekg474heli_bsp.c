@@ -11,8 +11,8 @@
 // Global variables
 DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
-DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_adc2;
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
@@ -71,12 +71,12 @@ static void SystemDMA_Config(void) {
   /* DMA1_Channel2_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel6_IRQn */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
-  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-  /* DMA1_Channel7_IRQn */
-  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
-  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+  /* DMA2_Channel1_IRQn */
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
+  /* DMA2_Channel2_IRQn */
+  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
 }
 
 void BSP_Assert_Failed(uint8_t* file, uint32_t line) {
