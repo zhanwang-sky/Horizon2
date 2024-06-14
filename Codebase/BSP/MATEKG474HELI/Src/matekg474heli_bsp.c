@@ -13,7 +13,6 @@ DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
-DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc2;
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
@@ -23,7 +22,6 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 SPI_HandleTypeDef hspi1;
 
-volatile uint32_t adc1_data[1];
 volatile uint32_t adc2_data[2];
 
 // Functions
@@ -123,7 +121,7 @@ void BSP_ADC_Init(void) {
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.SamplingMode = ADC_SAMPLING_MODE_NORMAL;
-  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
   hadc1.Init.OversamplingMode = ENABLE;
   hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_256;
@@ -145,7 +143,7 @@ void BSP_ADC_Init(void) {
   status = HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
   assert_param(status == HAL_OK);
   /* Start conversion */
-  status = HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc1_data, 1U);
+  status = HAL_ADC_Start(&hadc1);
   assert_param(status == HAL_OK);
 
   /* Init ADC2 */

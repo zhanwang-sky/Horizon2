@@ -190,7 +190,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: Change stack size from 1k to 4k\r\n"
+                       "new feature: get temperature by accessing ADC register instead of initiating DMA requests\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);

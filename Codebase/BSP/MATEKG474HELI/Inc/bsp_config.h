@@ -27,7 +27,7 @@ extern "C" {
 #define BSP_ADC_FD2PDATA(FD, PDATA) \
 do { \
   if ((FD) == 0) { \
-    PDATA = &adc1_data[0]; \
+    PDATA = &hadc1.Instance->DR; \
   } else if ((FD) == 1) { \
     PDATA = &adc2_data[0]; \
   } else if ((FD) == 2) { \
@@ -148,13 +148,13 @@ do { \
 } while (0)
 
 // Global variables
+extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern SPI_HandleTypeDef hspi1;
 
-extern volatile uint32_t adc1_data[1];
 extern volatile uint32_t adc2_data[2];
 
 // Function prototypes
