@@ -37,6 +37,10 @@ void al_init(void) {
   al_uart_init();
 #endif
 
+#if (BSP_NR_I2Cs > 0)
+  BSP_I2C_Init();
+#endif
+
 #if (BSP_NR_SPIs > 0)
   BSP_SPI_Init();
   al_spi_init();

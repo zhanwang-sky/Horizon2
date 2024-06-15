@@ -23,10 +23,13 @@
 extern TIM_HandleTypeDef htim6;
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
+extern DMA_HandleTypeDef hdma_i2c1_rx;
+extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi1;
 
 /******************************************************************************/
@@ -163,6 +166,42 @@ void SPI1_IRQHandler(void) {
   // ATTENTION:
   // Configure SPI and DMA interrupts with the same preemption priority.
   HAL_SPI_IRQHandler(&hspi1);
+}
+
+/**
+  * @brief  This function handles DMA1 channel7 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel7_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_i2c1_rx);
+}
+
+/**
+  * @brief  This function handles I2C1 event interrupt / I2C1 wake-up interrupt through EXTI line 23.
+  * @param  None
+  * @retval None
+  */
+void I2C1_EV_IRQHandler(void) {
+  HAL_I2C_EV_IRQHandler(&hi2c1);
+}
+
+/**
+  * @brief  This function handles I2C1 error interrupt.
+  * @param  None
+  * @retval None
+  */
+void I2C1_ER_IRQHandler(void) {
+  HAL_I2C_ER_IRQHandler(&hi2c1);
+}
+
+/**
+  * @brief  This function handles DMA1 channel8 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel8_IRQHandler(void) {
+  HAL_DMA_IRQHandler(&hdma_i2c1_tx);
 }
 
 /**

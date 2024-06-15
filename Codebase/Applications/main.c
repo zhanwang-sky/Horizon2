@@ -179,6 +179,40 @@ void test_adc(void* param) {
   }
 }
 
+void test_i2c(void* param) {
+  // Device: Goertek SPL06
+  static const uint8_t dev_addr = 0x76;
+  static const uint8_t reg_addr = 0x0d;
+  static char msg_buf[256];
+  int msg_len;
+  uint8_t i2c_buf[1];
+  HAL_StatusTypeDef status;
+  TickType_t last_wake;
+
+  // power-up delay
+  vTaskDelay(100 / portTICK_PERIOD_MS);
+
+  status = HAL_I2C_IsDeviceReady(&hi2c1, dev_addr << 1U, 10U, 100U);
+  msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                     "TEST I2C(400k) addressing: device %02hhx, status=%d, error_code=%d\r\n",
+                     dev_addr, status, hi2c1.ErrorCode);
+  al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+
+  last_wake = xTaskGetTickCount();
+  while (1) {
+    vTaskDelayUntil(&last_wake, 1000 / portTICK_PERIOD_MS);
+
+    status = HAL_I2C_Mem_Read_DMA(&hi2c1, dev_addr << 1U, reg_addr, I2C_MEMADD_SIZE_8BIT, i2c_buf, 1U);
+
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                       "TEST I2C(400k) mem read: device %02hhx reg %02hhx, data=%02hhx, status=%d, error_code=%d\r\n",
+                       dev_addr, reg_addr, i2c_buf[0], status, hi2c1.ErrorCode);
+    al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+  }
+}
+
 void timer_task(void* param) {
   static char msg_buf[512];
   int msg_len;
@@ -192,7 +226,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: change DMA channels\r\n"
+                       "new feature: configured I2C1\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);
@@ -259,6 +293,14 @@ int main(void) {
 
   xReturned = xTaskCreate(test_adc,
                           "TEST ADC",
+                          192,
+                          NULL,
+                          1,
+                          &tasks[nr_tasks++]);
+  configASSERT(xReturned == pdPASS);
+
+  xReturned = xTaskCreate(test_i2c,
+                          "TEST I2C",
                           192,
                           NULL,
                           1,

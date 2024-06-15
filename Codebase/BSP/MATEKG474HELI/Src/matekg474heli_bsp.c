@@ -9,17 +9,20 @@
 #include "stm32g4xx_hal.h"
 
 // Global variables
+DMA_HandleTypeDef hdma_adc2;
 DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
+DMA_HandleTypeDef hdma_i2c1_rx;
+DMA_HandleTypeDef hdma_i2c1_tx;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
-DMA_HandleTypeDef hdma_adc2;
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
 
 volatile uint32_t adc2_data[2];
@@ -71,11 +74,17 @@ static void SystemDMA_Config(void) {
   /* DMA1_Channel2_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel7_IRQn */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+  /* DMA1_Channel8_IRQn */
+  HAL_NVIC_SetPriority(DMA1_Channel8_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel8_IRQn);
   /* DMA2_Channel1_IRQn */
-  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, SYSTICK_INT_PRIORITY - 4UL, 0U);
   HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
   /* DMA2_Channel2_IRQn */
-  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, SYSTICK_INT_PRIORITY - 4UL, 0U);
   HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
 }
 
@@ -372,6 +381,45 @@ void BSP_UART_Init(void) {
   HAL_NVIC_EnableIRQ(USART3_IRQn);
 }
 
+void BSP_I2C_Init(void) {
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Select peripherals' clock source */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  status = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+  assert_param(status == HAL_OK);
+
+  /* Enable clocks */
+  __HAL_RCC_I2C1_CLK_ENABLE();
+
+  /* Init I2C1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x20B01E5FU;
+  hi2c1.Init.OwnAddress1 = 0U;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0U;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  status = HAL_I2C_Init(&hi2c1);
+  assert_param(status == HAL_OK);
+  /* Configure analog filter */
+  status = HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE);
+  assert_param(status == HAL_OK);
+  /* Configure digital filter */
+  status = HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0U);
+  assert_param(status == HAL_OK);
+
+  /* Enable I2C1 interrupts */
+  HAL_NVIC_SetPriority(I2C1_EV_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+  HAL_NVIC_SetPriority(I2C1_ER_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
+}
+
 void BSP_SPI_Init(void) {
   HAL_StatusTypeDef status = HAL_OK;
 
@@ -397,6 +445,6 @@ void BSP_SPI_Init(void) {
   assert_param(status == HAL_OK);
 
   /* Enable SPI1 interrupts */
-  HAL_NVIC_SetPriority(SPI1_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
+  HAL_NVIC_SetPriority(SPI1_IRQn, SYSTICK_INT_PRIORITY - 4UL, 0U);
   HAL_NVIC_EnableIRQ(SPI1_IRQn);
 }

@@ -20,17 +20,19 @@
 #include "stm32g4xx_hal.h"
 
 /* Global variables --------------------------------------------------------- */
+extern DMA_HandleTypeDef hdma_adc2;
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
+extern DMA_HandleTypeDef hdma_i2c1_rx;
+extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_adc2;
-extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi1;
 
 /**
@@ -201,6 +203,61 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
     assert_param(status == HAL_OK);
     /* link peripheral to DMA channel */
     __HAL_LINKDMA(huart, hdmatx, hdma_uart3_tx);
+  }
+}
+
+/**
+  * @brief  Initialize the I2C MSP.
+  * @param  hi2c I2C handle
+  * @retval None
+  */
+void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (hi2c == &hi2c1) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource I2C_SCL 1 A13 */
+    /* resource I2C_SDA 1 A14 */
+    GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* I2C1 DMA Init */
+    /* I2C1_RX */
+    hdma_i2c1_rx.Instance = DMA1_Channel7;
+    hdma_i2c1_rx.Init.Request = DMA_REQUEST_I2C1_RX;
+    hdma_i2c1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_i2c1_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_i2c1_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_i2c1_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_i2c1_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_i2c1_rx.Init.Mode = DMA_NORMAL;
+    hdma_i2c1_rx.Init.Priority = DMA_PRIORITY_HIGH;
+    status = HAL_DMA_Init(&hdma_i2c1_rx);
+    assert_param(status == HAL_OK);
+    /* link peripheral to DMA channel */
+    __HAL_LINKDMA(hi2c, hdmarx, hdma_i2c1_rx);
+    /* I2C1_TX */
+    hdma_i2c1_tx.Instance = DMA1_Channel8;
+    hdma_i2c1_tx.Init.Request = DMA_REQUEST_I2C1_TX;
+    hdma_i2c1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_i2c1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_i2c1_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_i2c1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_i2c1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_i2c1_tx.Init.Mode = DMA_NORMAL;
+    hdma_i2c1_tx.Init.Priority = DMA_PRIORITY_HIGH;
+    status = HAL_DMA_Init(&hdma_i2c1_tx);
+    assert_param(status == HAL_OK);
+    /* link peripheral to DMA channel */
+    __HAL_LINKDMA(hi2c, hdmatx, hdma_i2c1_tx);
   }
 }
 

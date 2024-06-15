@@ -550,6 +550,16 @@
               <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_gpio.c</FilePath>
             </File>
             <File>
+              <FileName>stm32g4xx_hal_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32g4xx_hal_i2c_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_i2c_ex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32g4xx_hal_pwr.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_pwr.c</FilePath>

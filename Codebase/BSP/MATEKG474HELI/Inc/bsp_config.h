@@ -21,6 +21,7 @@ extern "C" {
 #define BSP_NR_EXTIs (1)
 #define BSP_NR_PWMs  (6)
 #define BSP_NR_UARTs (2)
+#define BSP_NR_I2Cs  (1)
 #define BSP_NR_SPIs  (1)
 
 // Macros
@@ -153,6 +154,7 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi1;
 
 extern volatile uint32_t adc2_data[2];
@@ -164,6 +166,7 @@ void BSP_GPIO_Init(void);
 void BSP_EXTI_Init(void);
 void BSP_PWM_Init(void);
 void BSP_UART_Init(void);
+void BSP_I2C_Init(void);
 void BSP_SPI_Init(void);
 
 #ifdef __cplusplus
