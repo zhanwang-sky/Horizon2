@@ -415,6 +415,11 @@
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al_gpio.c</FilePath>
             </File>
             <File>
+              <FileName>al_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\AL\STM32\Src\al_i2c.c</FilePath>
+            </File>
+            <File>
               <FileName>al_pwm.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al_pwm.c</FilePath>

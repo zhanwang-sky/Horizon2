@@ -17,12 +17,21 @@
 TaskHandle_t tasks[MAX_TASKS];
 int nr_tasks = 0;
 SemaphoreHandle_t spi_done;
+SemaphoreHandle_t i2c_done;
 float servo_movement_period = 3.f;
 
 // Functions
 void spi_cb(int fd, int ec, void* param) {
   BaseType_t should_yield = pdFALSE;
   xSemaphoreGiveFromISR(spi_done, &should_yield);
+  portYIELD_FROM_ISR(should_yield);
+}
+
+void i2c_cb(int fd, int ec, void* param) {
+  int *p_ec = (int*) param;
+  BaseType_t should_yield = pdFALSE;
+  *p_ec = ec;
+  xSemaphoreGiveFromISR(i2c_done, &should_yield);
   portYIELD_FROM_ISR(should_yield);
 }
 
@@ -181,34 +190,73 @@ void test_adc(void* param) {
 
 void test_i2c(void* param) {
   // Device: Goertek SPL06
-  static const uint8_t dev_addr = 0x76;
-  static const uint8_t reg_addr = 0x0d;
+  static const uint8_t spl_addr = 0x76;
+  static const uint8_t reset_reg = 0x0c;
+  static const uint8_t id_reg = 0x0d;
   static char msg_buf[256];
+  static uint8_t i2c_buf[32];
   int msg_len;
-  uint8_t i2c_buf[1];
-  HAL_StatusTypeDef status;
+  int rc;
+  int ec;
   TickType_t last_wake;
 
   // power-up delay
   vTaskDelay(100 / portTICK_PERIOD_MS);
 
-  status = HAL_I2C_IsDeviceReady(&hi2c1, dev_addr << 1U, 10U, 100U);
+  // ping SPL06
+  ec = 0;
+  rc = al_i2c_async_write(0, spl_addr, NULL, 0, -1, i2c_cb, &ec);
+  if (rc == 0) {
+    xSemaphoreTake(i2c_done, portMAX_DELAY);
+  }
   msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                     "TEST I2C(400k) addressing: device %02hhx, status=%d, error_code=%d\r\n",
-                     dev_addr, status, hi2c1.ErrorCode);
+                     "TEST I2C(400k) write: device %02hhx, rc=%d, ec=%d\r\n",
+                     spl_addr, rc, ec);
+  al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+
+  // sleep for a while
+  vTaskDelay(200 / portTICK_PERIOD_MS);
+
+  // try to read HMC5883?
+  ec = 0;
+  rc = al_i2c_async_read(0, 0x1e, NULL, 0, -1, i2c_cb, &ec);
+  if (rc == 0) {
+    xSemaphoreTake(i2c_done, portMAX_DELAY);
+  }
+  msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                     "TEST I2C(400k) read: device 1e, rc=%d, ec=%d\r\n",
+                     rc, ec);
+  al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+
+  // sleep for a while
+  vTaskDelay(200 / portTICK_PERIOD_MS);
+
+  // reset SPL06
+  i2c_buf[0] = 0x09; // SOFT_RST
+  ec = 0;
+  rc = al_i2c_async_mem_write(0, spl_addr, NULL, &reset_reg, i2c_buf, 1, -1, i2c_cb, &ec);
+  if (rc == 0) {
+    xSemaphoreTake(i2c_done, portMAX_DELAY);
+  }
+  msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                     "TEST I2C(400k) mem write: device %02hhx, rc=%d, ec=%d\r\n",
+                     spl_addr, rc, ec);
   al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
 
   last_wake = xTaskGetTickCount();
   while (1) {
-    vTaskDelayUntil(&last_wake, 1000 / portTICK_PERIOD_MS);
+    vTaskDelayUntil(&last_wake, 5000 / portTICK_PERIOD_MS);
 
-    status = HAL_I2C_Mem_Read_DMA(&hi2c1, dev_addr << 1U, reg_addr, I2C_MEMADD_SIZE_8BIT, i2c_buf, 1U);
-
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    // read ID register
+    ec = 0;
+    rc = al_i2c_async_mem_read(0, spl_addr, NULL, &id_reg, i2c_buf, 1, -1, i2c_cb, &ec);
+    if (rc == 0) {
+      xSemaphoreTake(i2c_done, portMAX_DELAY);
+    }
 
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                       "TEST I2C(400k) mem read: device %02hhx reg %02hhx, data=%02hhx, status=%d, error_code=%d\r\n",
-                       dev_addr, reg_addr, i2c_buf[0], status, hi2c1.ErrorCode);
+                       "TEST I2C(400k) mem read: device %02hhx, data=%02hhx, rc=%d, ec=%d\r\n",
+                       spl_addr, i2c_buf[0], rc, ec);
     al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
   }
 }
@@ -226,7 +274,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: configured I2C1\r\n"
+                       "new feature: implement al_i2c APIs\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);
@@ -265,6 +313,7 @@ int main(void) {
   al_init();
 
   spi_done = xSemaphoreCreateBinary();
+  i2c_done = xSemaphoreCreateBinary();
 
   // create tasks
   xReturned = xTaskCreate(test_spi,

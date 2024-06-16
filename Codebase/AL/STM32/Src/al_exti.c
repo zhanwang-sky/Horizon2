@@ -12,7 +12,7 @@
 
 // Private variables
 static SemaphoreHandle_t al_exti_line_semphrs[BSP_NR_EXTIs];
-static volatile al_exti_cb_t al_exti_callbacks[BSP_NR_EXTIs];
+static al_exti_cb_t volatile al_exti_callbacks[BSP_NR_EXTIs];
 
 // Functions
 void al_exti_init(void) {

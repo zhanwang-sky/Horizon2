@@ -39,6 +39,7 @@ void al_init(void) {
 
 #if (BSP_NR_I2Cs > 0)
   BSP_I2C_Init();
+  al_i2c_init();
 #endif
 
 #if (BSP_NR_SPIs > 0)

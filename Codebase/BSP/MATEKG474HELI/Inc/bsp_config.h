@@ -121,6 +121,28 @@ do { \
   } \
 } while (0)
 
+#define BSP_I2C_FD2HANDLE(FD, HANDLE) \
+do { \
+  if ((FD) == 0) { \
+    HANDLE = &hi2c1; \
+  } \
+} while (0)
+
+#define BSP_I2C_HANDLE2FD(HANDLE, FD) \
+do { \
+  if ((HANDLE) == &hi2c1) { \
+    FD = 0; \
+  } \
+} while (0)
+
+#define BSP_I2C_HANDLE_ERROR(HANDLE) \
+do { \
+  if (((HANDLE)->ErrorCode & (HAL_I2C_ERROR_DMA | HAL_I2C_ERROR_SIZE)) != 0U) { \
+    /* fatal error */ \
+    HAL_NVIC_SystemReset(); \
+  } \
+} while (0)
+
 #define BSP_SPI_FD2HANDLE(FD, HANDLE) \
 do { \
   if ((FD) == 0) { \
