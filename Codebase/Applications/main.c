@@ -28,7 +28,7 @@ void spi_cb(int fd, int ec, void* param) {
 }
 
 void i2c_cb(int fd, int ec, void* param) {
-  int *p_ec = (int*) param;
+  int* p_ec = (int*) param;
   BaseType_t should_yield = pdFALSE;
   *p_ec = ec;
   xSemaphoreGiveFromISR(i2c_done, &should_yield);
@@ -177,10 +177,9 @@ void test_adc(void* param) {
   for (uint32_t i = 0; ; ++i) {
     vTaskDelayUntil(&last_wake, 500 / portTICK_PERIOD_MS);
 
-    al_analog_read(0, &temp);
-    al_analog_read_raw(0, &temp_raw);
+    al_analog_read_raw(0, &temp, &temp_raw);
     al_analog_read(1, &vbat);
-    al_analog_read_raw(2, &curr);
+    al_analog_read_raw(2, NULL, &curr);
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "(%d) temp=%.0f(%d) vbat=%.3f curr=%d\r\n",
                        i, temp, temp_raw, vbat, curr);
@@ -274,7 +273,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: implement al_i2c APIs\r\n"
+                       "new feature: modified al_analog_read_raw API\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);

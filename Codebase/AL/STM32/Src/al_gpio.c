@@ -11,8 +11,8 @@
 #if (BSP_NR_GPIOs > 0)
 
 // ATTENTION:
-// `al_gpio_toggle` does not guarantee the atomicity of operations,
-// which may cause the state of other pins to be incorrect.
+// `al_gpio_toggle` uses a read-modify-write operation,
+// which may affect the states of other pins.
 
 // Functions
 void al_gpio_init(void) { }

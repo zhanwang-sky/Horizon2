@@ -16,7 +16,7 @@ extern "C" {
 void al_analog_init(void);
 
 int al_analog_read(int fd, float* value);
-int al_analog_read_raw(int fd, int* data);
+int al_analog_read_raw(int fd, float* value, int* data);
 
 #ifdef __cplusplus
 }
