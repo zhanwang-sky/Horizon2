@@ -68,12 +68,12 @@ static void SystemDMA_Config(void) {
   __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* Enable DMA interrupts */
-  /* DMA1_Channel1_IRQn */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel4_IRQn */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
   /* DMA1_Channel7_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);

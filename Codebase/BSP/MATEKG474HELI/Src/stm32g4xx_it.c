@@ -140,6 +140,17 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 /**
+  * @brief  This function handles SPI1 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void SPI1_IRQHandler(void) {
+  // ATTENTION:
+  // Configure SPI and DMA interrupts with the same preemption priority.
+  HAL_SPI_IRQHandler(&hspi1);
+}
+
+/**
   * @brief  This function handles DMA2 channel1 global interrupt.
   * @param  None
   * @retval None
@@ -155,17 +166,6 @@ void DMA2_Channel1_IRQHandler(void) {
   */
 void DMA2_Channel2_IRQHandler(void) {
   HAL_DMA_IRQHandler(&hdma_spi1_rx);
-}
-
-/**
-  * @brief  This function handles SPI1 global interrupt.
-  * @param  None
-  * @retval None
-  */
-void SPI1_IRQHandler(void) {
-  // ATTENTION:
-  // Configure SPI and DMA interrupts with the same preemption priority.
-  HAL_SPI_IRQHandler(&hspi1);
 }
 
 /**
@@ -205,24 +205,21 @@ void DMA1_Channel8_IRQHandler(void) {
 }
 
 /**
-  * @brief  This function handles DMA1 channel1 global interrupt.
-  * @param  None
-  * @retval None
-  */
-void DMA1_Channel1_IRQHandler(void) {
-  // ATTENTION:
-  // `ErrorCode` might be modified by many HAL APIs in different interrupts.
-  // Ensure that all interrupts which may modify `ErrorCode` have the same preemption priority.
-  huart3.ErrorCode = HAL_UART_ERROR_NONE;
-  HAL_DMA_IRQHandler(&hdma_uart3_tx);
-}
-
-/**
   * @brief  This function handles DMA1 channel2 global interrupt.
   * @param  None
   * @retval None
   */
 void DMA1_Channel2_IRQHandler(void) {
+  huart3.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_DMA_IRQHandler(&hdma_uart3_tx);
+}
+
+/**
+  * @brief  This function handles DMA1 channel4 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel4_IRQHandler(void) {
   huart2.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_DMA_IRQHandler(&hdma_uart2_tx);
 }
