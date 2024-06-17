@@ -273,7 +273,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: rearrange DMA channels\r\n"
+                       "new feature: modified UART3 prescaler\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);
