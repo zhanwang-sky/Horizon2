@@ -21,7 +21,7 @@ typedef void (*al_uart_cb_t)(int, int, void*);
 // Function prototypes
 void al_uart_init(void);
 
-int al_uart_start_receiving(int fd, al_uart_cb_t cb);
+int al_uart_start_receive(int fd, al_uart_cb_t cb);
 
 int al_uart_async_send(int fd, const uint8_t* buf, int len,
                        int timeout, al_uart_cb_t cb, void* param);

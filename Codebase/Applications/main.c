@@ -20,7 +20,34 @@ SemaphoreHandle_t spi_done;
 SemaphoreHandle_t i2c_done;
 float servo_movement_period = 3.f;
 
-// Functions
+// TEST
+volatile uint32_t uart_rx_cnt = 0;
+volatile uint32_t uart_rx_err = 0;
+volatile uint8_t uart_last_recv = 0;
+SemaphoreHandle_t uart_done;
+
+void uart_rx_cb(int fd, int ec, void* param) {
+  uart_last_recv = (uint8_t) ((uintptr_t) param);
+  ++uart_rx_cnt;
+  if (ec) {
+    ++uart_rx_err;
+  }
+}
+
+void uart_tx_cb(int fd, int ec, void* param) {
+  int* p_ec = (int*) param;
+  BaseType_t should_yield = pdFALSE;
+
+  if (p_ec) {
+    *p_ec = ec;
+  }
+
+  if (uart_done) {
+    xSemaphoreGiveFromISR(uart_done, &should_yield);
+    portYIELD_FROM_ISR(should_yield);
+  }
+}
+
 void spi_cb(int fd, int ec, void* param) {
   BaseType_t should_yield = pdFALSE;
   xSemaphoreGiveFromISR(spi_done, &should_yield);
@@ -35,7 +62,52 @@ void i2c_cb(int fd, int ec, void* param) {
   portYIELD_FROM_ISR(should_yield);
 }
 
-// Tasks
+void test_uart(void* param) {
+  static char msg_buf[256];
+  static char data_buf[256];
+  int fd = *((int*) param);
+  int rc;
+  int ec;
+  int msg_len;
+  int data_len;
+  TickType_t last_wake;
+
+  msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                     "TEST_UART(%d): task started\r\n",
+                     fd);
+  al_uart_async_send(1, (const uint8_t*) msg_buf, sizeof(msg_buf), -1, NULL, NULL);
+
+  vTaskDelay(3000 / portTICK_PERIOD_MS);
+
+  rc = al_uart_start_receive(fd, uart_rx_cb);
+
+  msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                     "TEST_UART(%d): start reception, rc=%d\r\n",
+                     fd, rc);
+  al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+
+  last_wake = xTaskGetTickCount();
+  while (1) {
+    data_len = snprintf(data_buf, sizeof(data_buf),
+                        "rx_cnt=%u rx_err=%u last_recv=%02hhx",
+                        uart_rx_cnt, uart_rx_err, uart_last_recv);
+    ec = 0;
+    rc = al_uart_async_send(fd, (const uint8_t*) data_buf, data_len, -1, uart_tx_cb, &ec);
+    if (rc == 0) {
+      xSemaphoreTake(uart_done, portMAX_DELAY);
+    }
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    msg_len = snprintf(msg_buf, sizeof(msg_buf),
+                       "TEST_UART(%d): data sent, rc=%d, ec=%d, len=%d, content=\"%s\"\r\n",
+                       fd, rc, ec, data_len, data_buf);
+    al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
+
+    vTaskDelayUntil(&last_wake, 1000 / portTICK_PERIOD_MS);
+  }
+}
+
 void test_spi(void* param) {
   // ICM-42688-P registers
   static const uint8_t DEVICE_CONFIG = 0x11;
@@ -273,7 +345,7 @@ void timer_task(void* param) {
   while (1) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
-                       "new feature: modified UART3 prescaler\r\n"
+                       "new feature: TEST UART\r\n"
                        "Stack water marker(word):\r\n");
     for (int i = 0; i < nr_tasks; ++i) {
       stack_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);
@@ -307,14 +379,24 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
 // Entry point
 int main(void) {
   BaseType_t xReturned = pdPASS;
+  static int uart_test_fd = 0;
 
   // system init
   al_init();
 
   spi_done = xSemaphoreCreateBinary();
   i2c_done = xSemaphoreCreateBinary();
+  uart_done = xSemaphoreCreateBinary();
 
   // create tasks
+  xReturned = xTaskCreate(test_uart,
+                          "TEST UART",
+                          192,
+                          &uart_test_fd,
+                          3,
+                          &tasks[nr_tasks++]);
+  configASSERT(xReturned == pdPASS);
+
   xReturned = xTaskCreate(test_spi,
                           "TEST SPI",
                           192,

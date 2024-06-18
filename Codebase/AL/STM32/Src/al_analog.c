@@ -11,9 +11,8 @@
 #if (BSP_NR_ADCs > 0)
 
 // ATTENTION:
-// To optimize performance, do not enable ADC and DMA interrupts.
-// ATTENTION:
-// The raw data should be 32-bit aligned.
+// 1. To optimize performance, do not enable ADC and DMA interrupts.
+// 2. The raw data should be 32-bit aligned.
 
 // Functions
 void al_analog_init(void) { }

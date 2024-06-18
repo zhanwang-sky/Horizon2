@@ -108,16 +108,15 @@ do { \
   } \
 } while (0)
 
-#define BSP_UART_HANDLE_ERROR(HANDLE, RX_ERR, TX_ERR) \
+#define BSP_UART_HANDLE_ERROR(HANDLE) \
 do { \
-  if ((HANDLE->ErrorCode & (HAL_UART_ERROR_PE | HAL_UART_ERROR_NE | HAL_UART_ERROR_FE | HAL_UART_ERROR_ORE | HAL_UART_ERROR_RTO)) != 0U) { \
-    /* Read RDR to clear RXNE */ \
-    uint16_t uhdata = (uint16_t) READ_REG(HANDLE->Instance->RDR); \
+  if (((HANDLE)->ErrorCode & HAL_UART_ERROR_DMA) != 0U) { \
+    /* fatal error */ \
+    HAL_NVIC_SystemReset(); \
+  } else { \
+    /* Read RDR to clear RXNE flag */ \
+    uint16_t uhdata = (uint16_t) READ_REG((HANDLE)->Instance->RDR); \
     UNUSED(uhdata); \
-    RX_ERR = 1; \
-  } \
-  if ((HANDLE->ErrorCode & HAL_UART_ERROR_DMA) != 0U) { \
-    TX_ERR = 1; \
   } \
 } while (0)
 
