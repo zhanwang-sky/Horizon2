@@ -15,7 +15,8 @@
             "defines": [
                 "USE_HAL_DRIVER",
                 "STM32G474xx",
-                "USE_FreeRTOS"
+                "USE_FreeRTOS",
+                "UNIT_TEST"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11"

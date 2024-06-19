@@ -32,6 +32,20 @@ extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi1;
 
+#if defined(UNIT_TEST)
+extern volatile uint32_t uart_intr_cnt[10];
+extern volatile uint32_t uart_dmatx_intr_cnt[10];
+
+extern volatile uint32_t i2c_ev_intr_cnt[10];
+extern volatile uint32_t i2c_er_intr_cnt[10];
+extern volatile uint32_t i2c_dmarx_intr_cnt[10];
+extern volatile uint32_t i2c_dmatx_intr_cnt[10];
+
+extern volatile uint32_t spi_intr_cnt[10];
+extern volatile uint32_t spi_dmatx_intr_cnt[10];
+extern volatile uint32_t spi_dmarx_intr_cnt[10];
+#endif
+
 /******************************************************************************/
 /*                  Cortex-M4 Processor Exceptions Handlers                   */
 /******************************************************************************/
@@ -145,8 +159,9 @@ void TIM6_DAC_IRQHandler(void) {
   * @retval None
   */
 void SPI1_IRQHandler(void) {
-  // ATTENTION:
-  // Configure SPI and DMA interrupts with the same preemption priority.
+#if defined(UNIT_TEST)
+  ++spi_intr_cnt[0];
+#endif
   HAL_SPI_IRQHandler(&hspi1);
 }
 
@@ -156,6 +171,9 @@ void SPI1_IRQHandler(void) {
   * @retval None
   */
 void DMA2_Channel1_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++spi_dmatx_intr_cnt[0];
+#endif
   HAL_DMA_IRQHandler(&hdma_spi1_tx);
 }
 
@@ -165,6 +183,9 @@ void DMA2_Channel1_IRQHandler(void) {
   * @retval None
   */
 void DMA2_Channel2_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++spi_dmarx_intr_cnt[0];
+#endif
   HAL_DMA_IRQHandler(&hdma_spi1_rx);
 }
 
@@ -174,6 +195,9 @@ void DMA2_Channel2_IRQHandler(void) {
   * @retval None
   */
 void DMA1_Channel7_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++i2c_dmarx_intr_cnt[0];
+#endif
   HAL_DMA_IRQHandler(&hdma_i2c1_rx);
 }
 
@@ -183,6 +207,9 @@ void DMA1_Channel7_IRQHandler(void) {
   * @retval None
   */
 void I2C1_EV_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++i2c_ev_intr_cnt[0];
+#endif
   HAL_I2C_EV_IRQHandler(&hi2c1);
 }
 
@@ -192,6 +219,9 @@ void I2C1_EV_IRQHandler(void) {
   * @retval None
   */
 void I2C1_ER_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++i2c_er_intr_cnt[0];
+#endif
   HAL_I2C_ER_IRQHandler(&hi2c1);
 }
 
@@ -201,6 +231,9 @@ void I2C1_ER_IRQHandler(void) {
   * @retval None
   */
 void DMA1_Channel8_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++i2c_dmatx_intr_cnt[0];
+#endif
   HAL_DMA_IRQHandler(&hdma_i2c1_tx);
 }
 
@@ -210,6 +243,9 @@ void DMA1_Channel8_IRQHandler(void) {
   * @retval None
   */
 void DMA1_Channel2_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++uart_dmatx_intr_cnt[0];
+#endif
   huart3.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_DMA_IRQHandler(&hdma_uart3_tx);
 }
@@ -220,6 +256,9 @@ void DMA1_Channel2_IRQHandler(void) {
   * @retval None
   */
 void DMA1_Channel4_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++uart_dmatx_intr_cnt[1];
+#endif
   huart2.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_DMA_IRQHandler(&hdma_uart2_tx);
 }
@@ -230,6 +269,9 @@ void DMA1_Channel4_IRQHandler(void) {
   * @retval None
   */
 void USART2_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++uart_intr_cnt[1];
+#endif
   huart2.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_UART_IRQHandler(&huart2);
 }
@@ -240,6 +282,9 @@ void USART2_IRQHandler(void) {
   * @retval None
   */
 void USART3_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++uart_intr_cnt[0];
+#endif
   huart3.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_UART_IRQHandler(&huart3);
 }

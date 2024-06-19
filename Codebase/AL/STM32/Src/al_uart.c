@@ -12,7 +12,7 @@
 
 // ATTENTION
 // 1. Clear `huart->ErrorCode` at the beginning of DMA and UART ISRs.
-// 2. Disable Overrun error if supported.
+// 2. Disable Overrun interrupt, or modify the HAL library not to treat ORE as a blocking error.
 // 3. Use modified HAL library:
 //  - disable DMA HalfCplt interrupt to optimize performance.
 
