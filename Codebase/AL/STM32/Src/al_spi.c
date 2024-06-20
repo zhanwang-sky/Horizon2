@@ -10,15 +10,11 @@
 
 #if (BSP_NR_SPIs > 0)
 
-// ATTENTION:
-// The `data size` configured in BSP should be precisely 8 bits,
-// setting it shorter or longer may lead to unpredictable errors.
-
 // Private variables
 static SemaphoreHandle_t al_spi_bus_semphrs[BSP_NR_SPIs];
-static int al_spi_cs_maps[BSP_NR_SPIs];
-static al_spi_cb_t al_spi_callbacks[BSP_NR_SPIs];
-static void* al_spi_cb_params[BSP_NR_SPIs];
+static volatile int al_spi_cs_maps[BSP_NR_SPIs];
+static al_spi_cb_t volatile al_spi_callbacks[BSP_NR_SPIs];
+static void* volatile al_spi_cb_params[BSP_NR_SPIs];
 
 // Functions
 void al_spi_init(void) {
@@ -83,11 +79,6 @@ int al_spi_async_read_write(int fd, int cs, uint8_t* rx_buf, uint8_t* tx_buf, in
 
   // start transfer
   HAL_GPIO_WritePin(nss_port, nss_pin, GPIO_PIN_RESET);
-  // ATTENTION:
-  // It is necessary to insert some delays here when using a high frequency CPU (close to 1GHz).
-  // ATTENTION:
-  // Before calling `HAL_SPI_TransmitReceive_DMA`, check whether it correctly
-  // sets the DMA error callbacks for both RX and TX channels. If not, correct it!
   if (HAL_SPI_TransmitReceive_DMA(hspi, tx_buf, rx_buf, (uint16_t) len) != HAL_OK) {
     HAL_GPIO_WritePin(nss_port, nss_pin, GPIO_PIN_SET);
     xSemaphoreGive(al_spi_bus_semphrs[fd]);
@@ -102,10 +93,9 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
   int fd = -1;
   GPIO_TypeDef* nss_port = NULL;
   uint16_t nss_pin = 0U;
-  BaseType_t xShouldYield = pdFALSE;
+  BaseType_t should_yield = pdFALSE;
 
   BSP_SPI_HANDLE2FD(hspi, fd);
-
   if (fd >= 0 && fd < BSP_NR_SPIs) {
     BSP_SPI_CS2PORTPIN(al_spi_cs_maps[fd], nss_port, nss_pin);
     if (nss_port != NULL) {
@@ -114,33 +104,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
     if (al_spi_callbacks[fd]) {
       al_spi_callbacks[fd](fd, 0, al_spi_cb_params[fd]);
     }
-    xSemaphoreGiveFromISR(al_spi_bus_semphrs[fd], &xShouldYield);
-    portYIELD_FROM_ISR(xShouldYield);
+    xSemaphoreGiveFromISR(al_spi_bus_semphrs[fd], &should_yield);
+    portYIELD_FROM_ISR(should_yield);
   }
 }
 
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef* hspi) {
-  int fd = -1;
-  GPIO_TypeDef* nss_port = NULL;
-  uint16_t nss_pin = 0U;
-  BaseType_t xShouldYield = pdFALSE;
-
-  // do some low level handling
+  // low level handling
   BSP_SPI_HANDLE_ERROR(hspi);
-
-  BSP_SPI_HANDLE2FD(hspi, fd);
-
-  if (fd >= 0 && fd < BSP_NR_SPIs) {
-    BSP_SPI_CS2PORTPIN(al_spi_cs_maps[fd], nss_port, nss_pin);
-    if (nss_port != NULL) {
-      HAL_GPIO_WritePin(nss_port, nss_pin, GPIO_PIN_SET);
-    }
-    if (al_spi_callbacks[fd]) {
-      al_spi_callbacks[fd](fd, -1, al_spi_cb_params[fd]);
-    }
-    xSemaphoreGiveFromISR(al_spi_bus_semphrs[fd], &xShouldYield);
-    portYIELD_FROM_ISR(xShouldYield);
-  }
 }
 
 #endif /* BSP_NR_SPIs */

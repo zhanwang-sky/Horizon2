@@ -417,7 +417,7 @@ static void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: UNIT TEST\r\n"
+                       "new feature: disable DMA halfCplt interrupt for SPI\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
     for (int i = 0; i < nr_tasks; ++i) {
