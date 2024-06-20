@@ -10,6 +10,7 @@
 
 // Global variables
 DMA_HandleTypeDef hdma_adc2;
+DMA_HandleTypeDef hdma_uart1_tx;
 DMA_HandleTypeDef hdma_uart2_tx;
 DMA_HandleTypeDef hdma_uart3_tx;
 DMA_HandleTypeDef hdma_i2c1_rx;
@@ -20,6 +21,7 @@ ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 I2C_HandleTypeDef hi2c1;
@@ -74,6 +76,9 @@ static void SystemDMA_Config(void) {
   /* DMA1_Channel4_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  /* DMA1_Channel6_IRQn */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
   /* DMA1_Channel7_IRQn */
   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, SYSTICK_INT_PRIORITY - 3UL, 0U);
   HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
@@ -330,15 +335,35 @@ void BSP_UART_Init(void) {
   HAL_StatusTypeDef status = HAL_OK;
 
   /* Select peripherals' clock source */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART3;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 |
+                                       RCC_PERIPHCLK_USART2 |
+                                       RCC_PERIPHCLK_USART3;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
   status = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
   assert_param(status == HAL_OK);
 
   /* Enable clocks */
+  __HAL_RCC_USART1_CLK_ENABLE();
   __HAL_RCC_USART2_CLK_ENABLE();
   __HAL_RCC_USART3_CLK_ENABLE();
+
+  /* Init UART1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200U;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
+  huart1.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  status = HAL_UART_Init(&huart1);
+  assert_param(status == HAL_OK);
 
   /* Init UART2 */
   huart2.Instance = USART2;
@@ -373,6 +398,9 @@ void BSP_UART_Init(void) {
   status = HAL_UART_Init(&huart3);
   assert_param(status == HAL_OK);
 
+  /* Enable UART1 interrupts */
+  HAL_NVIC_SetPriority(USART1_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
+  HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* Enable UART2 interrupts */
   HAL_NVIC_SetPriority(USART2_IRQn, SYSTICK_INT_PRIORITY - 2UL, 0U);
   HAL_NVIC_EnableIRQ(USART2_IRQn);

@@ -20,7 +20,7 @@ extern "C" {
 #define BSP_NR_GPIOs (3)
 #define BSP_NR_EXTIs (1)
 #define BSP_NR_PWMs  (6)
-#define BSP_NR_UARTs (2)
+#define BSP_NR_UARTs (3)
 #define BSP_NR_I2Cs  (1)
 #define BSP_NR_SPIs  (1)
 
@@ -96,6 +96,8 @@ do { \
     HANDLE = &huart3; \
   } else if ((FD) == 1) { \
     HANDLE = &huart2; \
+  } else if ((FD) == 2) { \
+    HANDLE = &huart1; \
   } \
 } while (0)
 
@@ -105,6 +107,8 @@ do { \
     FD = 0; \
   } else if ((HANDLE) == &huart2) { \
     FD = 1; \
+  } else if ((HANDLE) == &huart1) { \
+    FD = 2; \
   } \
 } while (0)
 
@@ -173,6 +177,7 @@ do { \
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c1;

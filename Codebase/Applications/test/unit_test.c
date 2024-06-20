@@ -417,7 +417,7 @@ static void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: disable DMA halfCplt interrupt for SPI\r\n"
+                       "new feature: configured UART1\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
     for (int i = 0; i < nr_tasks; ++i) {
@@ -447,7 +447,7 @@ static void task_monitor(void* param) {
 
 // Functions
 void unit_test(void) {
-  static int uart_test_fd = 0;
+  static int uart_test_fd = 2;
   static float servo_period = 3.f;
   BaseType_t ret = pdFAIL;
 

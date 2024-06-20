@@ -21,12 +21,14 @@
 
 /* Global variables --------------------------------------------------------- */
 extern TIM_HandleTypeDef htim6;
+extern DMA_HandleTypeDef hdma_uart1_tx;
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
 extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c1;
@@ -261,6 +263,32 @@ void DMA1_Channel4_IRQHandler(void) {
 #endif
   huart2.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_DMA_IRQHandler(&hdma_uart2_tx);
+}
+
+/**
+  * @brief  This function handles DMA1 channel6 global interrupt.
+  * @param  None
+  * @retval None
+  */
+void DMA1_Channel6_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++uart_dmatx_intr_cnt[2];
+#endif
+  huart1.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_DMA_IRQHandler(&hdma_uart1_tx);
+}
+
+/**
+  * @brief  This function handles USART1 global interrupt / USART1 wake-up interrupt through EXTI line 25.
+  * @param  None
+  * @retval None
+  */
+void USART1_IRQHandler(void) {
+#if defined(UNIT_TEST)
+  ++uart_intr_cnt[2];
+#endif
+  huart1.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_UART_IRQHandler(&huart1);
 }
 
 /**

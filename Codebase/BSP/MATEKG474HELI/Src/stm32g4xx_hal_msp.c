@@ -21,6 +21,7 @@
 
 /* Global variables --------------------------------------------------------- */
 extern DMA_HandleTypeDef hdma_adc2;
+extern DMA_HandleTypeDef hdma_uart1_tx;
 extern DMA_HandleTypeDef hdma_uart2_tx;
 extern DMA_HandleTypeDef hdma_uart3_tx;
 extern DMA_HandleTypeDef hdma_i2c1_rx;
@@ -30,6 +31,7 @@ extern DMA_HandleTypeDef hdma_spi1_rx;
 extern ADC_HandleTypeDef hadc2;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c1;
@@ -139,7 +141,39 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   HAL_StatusTypeDef status = HAL_OK;
 
-  if (huart == &huart2) {
+  if (huart == &huart1) {
+    /* Enable GPIO clock */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* Configure GPIO pins */
+    /* resource SERIAL_TX 1 A09 */
+    GPIO_InitStruct.Pin = GPIO_PIN_9;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    /* resource SERIAL_RX 1 A10 */
+    GPIO_InitStruct.Pin = GPIO_PIN_10;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* UART1 DMA Init */
+    /* UART1_TX */
+    hdma_uart1_tx.Instance = DMA1_Channel6;
+    hdma_uart1_tx.Init.Request = DMA_REQUEST_USART1_TX;
+    hdma_uart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_uart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_uart1_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_uart1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_uart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_uart1_tx.Init.Mode = DMA_NORMAL;
+    hdma_uart1_tx.Init.Priority = DMA_PRIORITY_LOW;
+    status = HAL_DMA_Init(&hdma_uart1_tx);
+    assert_param(status == HAL_OK);
+    /* link peripheral to DMA channel */
+    __HAL_LINKDMA(huart, hdmatx, hdma_uart1_tx);
+  } else if (huart == &huart2) {
     /* Enable GPIO clock */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
