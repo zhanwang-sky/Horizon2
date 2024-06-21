@@ -56,6 +56,11 @@ extern "C" {
 // Function prototypes
 void al_init(void);
 
+#if defined(BSP_HAS_WDOG)
+void al_wdog_init(void);
+void al_wdog_feed(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

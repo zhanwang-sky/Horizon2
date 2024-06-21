@@ -23,6 +23,7 @@ extern "C" {
 #define BSP_NR_UARTs (3)
 #define BSP_NR_I2Cs  (1)
 #define BSP_NR_SPIs  (1)
+#define BSP_HAS_WDOG (1)
 
 // Macros
 #define BSP_ADC_FD2PDATA(FD, PDATA) \
@@ -182,6 +183,7 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi1;
+extern IWDG_HandleTypeDef hiwdg;
 
 extern volatile uint32_t adc2_data[2];
 
@@ -194,6 +196,7 @@ void BSP_PWM_Init(void);
 void BSP_UART_Init(void);
 void BSP_I2C_Init(void);
 void BSP_SPI_Init(void);
+void BSP_WDOG_Init(void);
 
 #ifdef __cplusplus
 }

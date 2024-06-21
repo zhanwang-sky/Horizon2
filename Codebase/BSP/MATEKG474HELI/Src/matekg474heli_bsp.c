@@ -26,6 +26,7 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
+IWDG_HandleTypeDef hiwdg;
 
 volatile uint32_t adc2_data[2];
 
@@ -40,8 +41,9 @@ static void SystemClock_Config(void) {
 
   /* Initializes the RCC Oscillators according to the specified parameters
      in the RCC_OscInitTypeDef structure. */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
@@ -475,4 +477,15 @@ void BSP_SPI_Init(void) {
   /* Enable SPI1 interrupts */
   HAL_NVIC_SetPriority(SPI1_IRQn, SYSTICK_INT_PRIORITY - 4UL, 0U);
   HAL_NVIC_EnableIRQ(SPI1_IRQn);
+}
+
+void BSP_WDOG_Init(void) {
+  HAL_StatusTypeDef status = HAL_OK;
+
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_4; // 8KHz
+  hiwdg.Init.Reload = 2048U; // 256ms
+  hiwdg.Init.Window = IWDG_WINR_WIN;
+  status = HAL_IWDG_Init(&hiwdg);
+  assert_param(status == HAL_OK);
 }

@@ -371,6 +371,8 @@ static void test_gpio(void* param) {
 
   last_wake = xTaskGetTickCount();
   for (uint32_t i = 0; ; ++i) {
+    al_wdog_feed();
+
     vTaskDelayUntil(&last_wake, 100 / portTICK_PERIOD_MS);
     if (i % 2 == 0) {
       al_gpio_toggle(0);
@@ -417,7 +419,7 @@ static void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: rearrange DMA channels\r\n"
+                       "new feature: implemented al_wdog API\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
     for (int i = 0; i < nr_tasks; ++i) {

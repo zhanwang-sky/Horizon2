@@ -47,3 +47,13 @@ void al_init(void) {
   al_spi_init();
 #endif
 }
+
+#if defined(BSP_HAS_WDOG)
+void al_wdog_init(void) {
+  BSP_WDOG_Init();
+}
+
+void al_wdog_feed(void) {
+  HAL_IWDG_Refresh(&hiwdg);
+}
+#endif
