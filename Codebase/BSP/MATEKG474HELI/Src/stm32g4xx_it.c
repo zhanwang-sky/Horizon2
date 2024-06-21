@@ -248,8 +248,8 @@ void DMA1_Channel2_IRQHandler(void) {
 #if defined(UNIT_TEST)
   ++uart_dmatx_intr_cnt[0];
 #endif
-  huart3.ErrorCode = HAL_UART_ERROR_NONE;
-  HAL_DMA_IRQHandler(&hdma_uart3_tx);
+  huart1.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_DMA_IRQHandler(&hdma_uart1_tx);
 }
 
 /**
@@ -274,8 +274,8 @@ void DMA1_Channel6_IRQHandler(void) {
 #if defined(UNIT_TEST)
   ++uart_dmatx_intr_cnt[2];
 #endif
-  huart1.ErrorCode = HAL_UART_ERROR_NONE;
-  HAL_DMA_IRQHandler(&hdma_uart1_tx);
+  huart3.ErrorCode = HAL_UART_ERROR_NONE;
+  HAL_DMA_IRQHandler(&hdma_uart3_tx);
 }
 
 /**
@@ -285,7 +285,7 @@ void DMA1_Channel6_IRQHandler(void) {
   */
 void USART1_IRQHandler(void) {
 #if defined(UNIT_TEST)
-  ++uart_intr_cnt[2];
+  ++uart_intr_cnt[0];
 #endif
   huart1.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_UART_IRQHandler(&huart1);
@@ -311,7 +311,7 @@ void USART2_IRQHandler(void) {
   */
 void USART3_IRQHandler(void) {
 #if defined(UNIT_TEST)
-  ++uart_intr_cnt[0];
+  ++uart_intr_cnt[2];
 #endif
   huart3.ErrorCode = HAL_UART_ERROR_NONE;
   HAL_UART_IRQHandler(&huart3);

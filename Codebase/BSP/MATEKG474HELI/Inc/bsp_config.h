@@ -93,21 +93,21 @@ do { \
 #define BSP_UART_FD2HANDLE(FD, HANDLE) \
 do { \
   if ((FD) == 0) { \
-    HANDLE = &huart3; \
+    HANDLE = &huart1; \
   } else if ((FD) == 1) { \
     HANDLE = &huart2; \
   } else if ((FD) == 2) { \
-    HANDLE = &huart1; \
+    HANDLE = &huart3; \
   } \
 } while (0)
 
 #define BSP_UART_HANDLE2FD(HANDLE, FD) \
 do { \
-  if ((HANDLE) == &huart3) { \
+  if ((HANDLE) == &huart1) { \
     FD = 0; \
   } else if ((HANDLE) == &huart2) { \
     FD = 1; \
-  } else if ((HANDLE) == &huart1) { \
+  } else if ((HANDLE) == &huart3) { \
     FD = 2; \
   } \
 } while (0)
