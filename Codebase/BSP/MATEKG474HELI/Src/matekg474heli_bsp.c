@@ -386,7 +386,7 @@ void BSP_UART_Init(void) {
   /* Init UART3 */
   huart3.Instance = USART3;
   huart3.Init.BaudRate = 100000U;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.WordLength = UART_WORDLENGTH_9B;
   huart3.Init.StopBits = UART_STOPBITS_2;
   huart3.Init.Parity = UART_PARITY_EVEN;
   huart3.Init.Mode = UART_MODE_TX_RX;

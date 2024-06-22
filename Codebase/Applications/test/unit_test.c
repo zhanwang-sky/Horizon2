@@ -419,7 +419,7 @@ static void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: implemented al_wdog API\r\n"
+                       "new feature: corrected UART params\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
     for (int i = 0; i < nr_tasks; ++i) {
