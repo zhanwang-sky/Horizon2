@@ -97,7 +97,8 @@ static void SystemDMA_Config(void) {
 
 void BSP_Assert_Failed(uint8_t* file, uint32_t line) {
   __disable_irq();
-  GPIOC->BSRR = (uint32_t) (GPIO_PIN_14 | GPIO_PIN_15);
+  /* BLUE */
+  GPIOC->BSRR = (((uint32_t) GPIO_PIN_14) << 16U) | ((uint32_t) GPIO_PIN_15);
   while (1);
 }
 

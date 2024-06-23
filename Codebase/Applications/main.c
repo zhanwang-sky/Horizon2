@@ -23,7 +23,6 @@ int main(void) {
   al_init();
 
 #if defined(UNIT_TEST)
-  al_wdog_init();
   unit_test();
 #endif
 

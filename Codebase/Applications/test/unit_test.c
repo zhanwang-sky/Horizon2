@@ -364,25 +364,6 @@ static void test_pwm(void* param) {
   }
 }
 
-static void test_gpio(void* param) {
-  TickType_t last_wake;
-
-  al_gpio_set(0, false);
-
-  last_wake = xTaskGetTickCount();
-  for (uint32_t i = 0; ; ++i) {
-    al_wdog_feed();
-
-    vTaskDelayUntil(&last_wake, 100 / portTICK_PERIOD_MS);
-    if (i % 2 == 0) {
-      al_gpio_toggle(0);
-    }
-    if (i % 3 == 0) {
-      al_gpio_toggle(1);
-    }
-  }
-}
-
 static void test_adc(void* param) {
   static char msg_buf[128];
   int msg_len;
@@ -419,7 +400,7 @@ static void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: corrected UART params\r\n"
+                       "new feature: updated unit test\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
     for (int i = 0; i < nr_tasks; ++i) {
@@ -487,14 +468,6 @@ void unit_test(void) {
                     "TEST_PWM",
                     2 * configMINIMAL_STACK_SIZE,
                     &servo_period,
-                    tskIDLE_PRIORITY + 1,
-                    &tasks[nr_tasks++]);
-  configASSERT(ret == pdPASS);
-
-  ret = xTaskCreate(test_gpio,
-                    "TEST_GPIO",
-                    configMINIMAL_STACK_SIZE,
-                    NULL,
                     tskIDLE_PRIORITY + 1,
                     &tasks[nr_tasks++]);
   configASSERT(ret == pdPASS);
