@@ -16,7 +16,8 @@
                 "USE_HAL_DRIVER",
                 "STM32G474xx",
                 "USE_FreeRTOS",
-                "UNIT_TEST"
+                "UNIT_TEST",
+                "DEBUG"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11"

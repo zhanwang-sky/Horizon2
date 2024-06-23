@@ -12,9 +12,6 @@
 
 #if defined(UNIT_TEST)
 
-// Definitions
-#define MAX_TASKS 100
-
 // Global variables
 volatile uint32_t uart_intr_cnt[10];
 volatile uint32_t uart_dmatx_intr_cnt[10];
@@ -36,9 +33,6 @@ static SemaphoreHandle_t spi_done;
 static volatile uint32_t uart_rx_cnt;
 static volatile uint32_t uart_rx_err;
 static volatile uint8_t uart_last_recv;
-
-static TaskHandle_t tasks[MAX_TASKS];
-static int nr_tasks = 0;
 
 // Callbacks
 static void uart_rx_cb(int fd, int ec, void* param) {
@@ -387,47 +381,6 @@ static void test_adc(void* param) {
   }
 }
 
-static void task_monitor(void* param) {
-  static char msg_buf[512];
-  int msg_len;
-  TaskHandle_t idle_task;
-  UBaseType_t high_water_mark;
-  size_t free_heap_size;
-  TickType_t last_wake;
-
-  last_wake = xTaskGetTickCount();
-  for (uint32_t round = 0; ; ++round) {
-    msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                       "----------\r\n"
-                       "(%u)\r\n"
-                       "new feature: updated unit test\r\n"
-                       "Stack high water mark(word):\r\n",
-                       round);
-    for (int i = 0; i < nr_tasks; ++i) {
-      high_water_mark = uxTaskGetStackHighWaterMark(tasks[i]);
-      msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
-                          "%s: %lu\r\n",
-                          pcTaskGetName(tasks[i]),
-                          high_water_mark);
-    }
-    idle_task = xTaskGetIdleTaskHandle();
-    high_water_mark = uxTaskGetStackHighWaterMark(idle_task);
-    msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
-                        "%s: %lu\r\n",
-                        pcTaskGetName(idle_task),
-                        high_water_mark);
-    free_heap_size = xPortGetFreeHeapSize();
-    msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
-                        "Free heap size(byte): %zu\r\n"
-                        "\r\n",
-                        free_heap_size);
-
-    al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
-
-    vTaskDelayUntil(&last_wake, 5000 / portTICK_PERIOD_MS);
-  }
-}
-
 // Functions
 void unit_test(void) {
   static int uart_test_fd = 2;
@@ -445,7 +398,7 @@ void unit_test(void) {
                     2 * configMINIMAL_STACK_SIZE,
                     NULL,
                     tskIDLE_PRIORITY + 4,
-                    &tasks[nr_tasks++]);
+                    NULL);
   configASSERT(ret == pdPASS);
 
   ret = xTaskCreate(test_i2c,
@@ -453,7 +406,7 @@ void unit_test(void) {
                     2 * configMINIMAL_STACK_SIZE,
                     NULL,
                     tskIDLE_PRIORITY + 3,
-                    &tasks[nr_tasks++]);
+                    NULL);
   configASSERT(ret == pdPASS);
 
   ret = xTaskCreate(test_uart,
@@ -461,7 +414,7 @@ void unit_test(void) {
                     2 * configMINIMAL_STACK_SIZE,
                     &uart_test_fd,
                     tskIDLE_PRIORITY + 2,
-                    &tasks[nr_tasks++]);
+                    NULL);
   configASSERT(ret == pdPASS);
 
   ret = xTaskCreate(test_pwm,
@@ -469,7 +422,7 @@ void unit_test(void) {
                     2 * configMINIMAL_STACK_SIZE,
                     &servo_period,
                     tskIDLE_PRIORITY + 1,
-                    &tasks[nr_tasks++]);
+                    NULL);
   configASSERT(ret == pdPASS);
 
   ret = xTaskCreate(test_adc,
@@ -477,15 +430,7 @@ void unit_test(void) {
                     2 * configMINIMAL_STACK_SIZE,
                     NULL,
                     tskIDLE_PRIORITY + 1,
-                    &tasks[nr_tasks++]);
-  configASSERT(ret == pdPASS);
-
-  ret = xTaskCreate(task_monitor,
-                    "TASK_MONITOR",
-                    configMINIMAL_STACK_SIZE,
-                    NULL,
-                    tskIDLE_PRIORITY,
-                    &tasks[nr_tasks++]);
+                    NULL);
   configASSERT(ret == pdPASS);
 }
 

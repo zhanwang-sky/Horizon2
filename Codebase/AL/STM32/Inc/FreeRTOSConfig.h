@@ -44,15 +44,19 @@
 // Hook function related definitions.
 #define configUSE_IDLE_HOOK                     0
 #define configUSE_TICK_HOOK                     0
+#if defined(DEBUG)
 #define configCHECK_FOR_STACK_OVERFLOW          2
+#endif
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_DAEMON_TASK_STARTUP_HOOK      0
 #define configUSE_SB_COMPLETED_CALLBACK         0
 
 // Run time and task stats gathering related definitions.
+#if defined(DEBUG)
 #define configGENERATE_RUN_TIME_STATS           0
-#define configUSE_TRACE_FACILITY                0
+#define configUSE_TRACE_FACILITY                1
 #define configUSE_STATS_FORMATTING_FUNCTIONS    0
+#endif
 
 // Co-routine related definitions.
 #define configUSE_CO_ROUTINES                   0
@@ -86,21 +90,23 @@
 #define INCLUDE_vTaskPrioritySet                0
 #define INCLUDE_uxTaskPriorityGet               0
 #define INCLUDE_vTaskDelete                     0
-#define INCLUDE_vTaskSuspend                    1
+#define INCLUDE_vTaskSuspend                    0
 #define INCLUDE_xResumeFromISR                  0
 #define INCLUDE_vTaskDelayUntil                 1
 #define INCLUDE_vTaskDelay                      1
-#define INCLUDE_xTaskGetSchedulerState          1
-#define INCLUDE_xTaskGetCurrentTaskHandle       1
+#define INCLUDE_xTaskGetSchedulerState          0
+#define INCLUDE_xTaskGetCurrentTaskHandle       0
+#if defined(DEBUG)
 #define INCLUDE_uxTaskGetStackHighWaterMark     1
 #define INCLUDE_uxTaskGetStackHighWaterMark2    0
-#define INCLUDE_xTaskGetIdleTaskHandle          1
+#endif
+#define INCLUDE_xTaskGetIdleTaskHandle          0
 #define INCLUDE_eTaskGetState                   0
 #define INCLUDE_xEventGroupSetBitFromISR        0
 #define INCLUDE_xTimerPendFunctionCall          0
 #define INCLUDE_xTaskAbortDelay                 0
 #define INCLUDE_xTaskGetHandle                  0
-#define INCLUDE_xTaskResumeFromISR              1
+#define INCLUDE_xTaskResumeFromISR              0
 
 // Definitions that map the FreeRTOS port interrupt handlers to their CMSIS standard names.
 #define vPortSVCHandler     SVC_Handler
