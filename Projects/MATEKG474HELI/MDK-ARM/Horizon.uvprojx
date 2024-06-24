@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32G474xx,USE_FreeRTOS,UNIT_TEST,DEBUG</Define>
+              <Define>USE_HAL_DRIVER,STM32G474xx,USE_FreeRTOS,DEBUG</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\Codebase\AL\STM32\Inc;..\..\..\Codebase\FreeRTOS\include;..\..\..\Codebase\FreeRTOS\portable\GCC\ARM_CM4F;..\..\..\Codebase\BSP\MATEKG474HELI\Inc;..\..\..\Codebase\Drivers\CMSIS\Core\Include;..\..\..\Codebase\Drivers\CMSIS\Device\ST\STM32G4xx\Include;..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Inc</IncludePath>
+              <IncludePath>..\..\..\Codebase\Applications\rx;..\..\..\Codebase\AL\STM32\Inc;..\..\..\Codebase\FreeRTOS\include;..\..\..\Codebase\FreeRTOS\portable\GCC\ARM_CM4F;..\..\..\Codebase\BSP\MATEKG474HELI\Inc;..\..\..\Codebase\Drivers\CMSIS\Core\Include;..\..\..\Codebase\Drivers\CMSIS\Device\ST\STM32G4xx\Include;..\..\..\Codebase\Drivers\STM32G4xx_HAL_Driver\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -388,6 +388,16 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\Applications\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>sbus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Applications\rx\sbus.c</FilePath>
+            </File>
+            <File>
+              <FileName>sbus_rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\Applications\rx\sbus_rx.c</FilePath>
             </File>
             <File>
               <FileName>unit_test.c</FileName>
