@@ -32,6 +32,10 @@ void al_init(void) {
   al_pwm_init();
 #endif
 
+#if (BSP_NR_DSHOTs > 0)
+  BSP_DSHOT_Init();
+#endif
+
 #if (BSP_NR_UARTs > 0)
   BSP_UART_Init();
   al_uart_init();
