@@ -28,7 +28,6 @@ extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_tim2_up;
 extern ADC_HandleTypeDef hadc2;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
@@ -98,7 +97,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
   */
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  HAL_StatusTypeDef status = HAL_OK;
 
   if (htim == &htim2) {
     /* Enable GPIO clock */
@@ -113,22 +111,6 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* TIM2 DMA Init */
-    /* TIM2_UP */
-    hdma_tim2_up.Instance = DMA2_Channel3;
-    hdma_tim2_up.Init.Request = DMA_REQUEST_TIM2_UP;
-    hdma_tim2_up.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_tim2_up.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim2_up.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_tim2_up.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_tim2_up.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
-    hdma_tim2_up.Init.Mode = DMA_NORMAL;
-    hdma_tim2_up.Init.Priority = DMA_PRIORITY_MEDIUM;
-    status = HAL_DMA_Init(&hdma_tim2_up);
-    assert_param(status == HAL_OK);
-    /* link peripheral to DMA channel */
-    __HAL_LINKDMA(htim, hdma[TIM_DMA_ID_UPDATE], hdma_tim2_up);
   } else if (htim == &htim3) {
     /* Enable GPIO clock */
     __HAL_RCC_GPIOA_CLK_ENABLE();

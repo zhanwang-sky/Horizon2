@@ -346,10 +346,13 @@ static void test_pwm(void* param) {
     for (int i = 0; i < (int) roundf(cycles); ++i) {
       float arc = (float) i * delta;
       int pulse1 = (int) roundf(500.f * cosf(arc));
+      int pulse2 = (int) roundf(850.f * cosf(arc));
       al_pwm_write(0, 1500 + pulse1);
       al_pwm_write(1, 1350 + pulse1);
       al_pwm_write(2, 1050 + pulse1);
       al_pwm_write(3, 1850 + pulse1);
+      al_pwm_write(4, 1450 + pulse2);
+      al_pwm_write(5, 1550 + pulse2);
       vTaskDelayUntil(&last_wake, 1000 / PWM_FREQ / portTICK_PERIOD_MS);
     }
   }

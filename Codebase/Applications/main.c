@@ -46,7 +46,7 @@ void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: configure TIM2 to generate DShot signal\r\n"
+                       "new feature: optimization: O2\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
 

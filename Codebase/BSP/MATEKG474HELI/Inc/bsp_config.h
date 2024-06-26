@@ -16,15 +16,14 @@ extern "C" {
 #endif
 
 // Definitions
-#define BSP_NR_ADCs   (3)
-#define BSP_NR_GPIOs  (3)
-#define BSP_NR_EXTIs  (1)
-#define BSP_NR_PWMs   (4)
-#define BSP_NR_DSHOTs (2)
-#define BSP_NR_UARTs  (3)
-#define BSP_NR_I2Cs   (1)
-#define BSP_NR_SPIs   (1)
-#define BSP_HAS_WDOG  (1)
+#define BSP_NR_ADCs  (3)
+#define BSP_NR_GPIOs (3)
+#define BSP_NR_EXTIs (1)
+#define BSP_NR_PWMs  (6)
+#define BSP_NR_UARTs (3)
+#define BSP_NR_I2Cs  (1)
+#define BSP_NR_SPIs  (1)
+#define BSP_HAS_WDOG (1)
 
 // Macros
 #define BSP_ADC_FD2PDATA(FD, PDATA) \
@@ -194,7 +193,6 @@ void BSP_ADC_Init(void);
 void BSP_GPIO_Init(void);
 void BSP_EXTI_Init(void);
 void BSP_PWM_Init(void);
-void BSP_DSHOT_Init(void);
 void BSP_UART_Init(void);
 void BSP_I2C_Init(void);
 void BSP_SPI_Init(void);

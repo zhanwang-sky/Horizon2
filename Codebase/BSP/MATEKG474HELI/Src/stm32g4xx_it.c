@@ -28,7 +28,6 @@ extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_tim2_up;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -333,13 +332,4 @@ void USART3_IRQHandler(void) {
   */
 void EXTI9_5_IRQHandler(void) {
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
-}
-
-/**
-  * @brief  This function handles DMA2 channel3 global interrupt.
-  * @param  None
-  * @retval None
-  */
-void DMA2_Channel3_IRQHandler(void) {
-  HAL_DMA_IRQHandler(&hdma_tim2_up);
 }
