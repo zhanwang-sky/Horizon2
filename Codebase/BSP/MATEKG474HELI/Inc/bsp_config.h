@@ -83,14 +83,21 @@ do { \
   } else if ((FD) == 3) { \
     HANDLE = &htim3; \
     CH = TIM_CHANNEL_1; \
-  } else if ((FD) == 4) { \
-    HANDLE = &htim2; \
-    CH = TIM_CHANNEL_2; \
-  } else if ((FD) == 5) { \
-    HANDLE = &htim2; \
-    CH = TIM_CHANNEL_1; \
   } \
 } while (0)
+
+#define BSP_DSHOT_BIT_0 (30U)
+#define BSP_DSHOT_BIT_1 (60U)
+
+#define BSP_DSHOT_GET_BURST_PARAMS(HANDLE, BURST_BASE, BURST_REQ, BURST_LEN) \
+do { \
+  HANDLE = &htim2; \
+  BURST_BASE = TIM_DMABASE_CCR1; \
+  BURST_REQ = TIM_DMA_UPDATE; \
+  BURST_LEN = TIM_DMABURSTLENGTH_2TRANSFERS; \
+} while (0)
+
+#define BSP_DSHOT_IDENTIFY_HANDLE(HANDLE) ((HANDLE) == &htim2)
 
 #define BSP_UART_FD2HANDLE(FD, HANDLE) \
 do { \

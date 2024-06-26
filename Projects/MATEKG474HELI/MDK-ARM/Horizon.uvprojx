@@ -420,6 +420,11 @@
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al_analog.c</FilePath>
             </File>
             <File>
+              <FileName>al_dshot.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Codebase\AL\STM32\Src\al_dshot.c</FilePath>
+            </File>
+            <File>
               <FileName>al_exti.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Codebase\AL\STM32\Src\al_exti.c</FilePath>

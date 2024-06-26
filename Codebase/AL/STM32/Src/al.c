@@ -34,6 +34,7 @@ void al_init(void) {
 
 #if (BSP_NR_DSHOTs > 0)
   BSP_DSHOT_Init();
+  al_dshot_init();
 #endif
 
 #if (BSP_NR_UARTs > 0)
@@ -61,3 +62,18 @@ void al_wdog_feed(void) {
   HAL_IWDG_Refresh(&hiwdg);
 }
 #endif
+
+// ISR callbacks
+#if (BSP_NR_DSHOTs > 0)
+extern void al_dshot_isr_cb(TIM_HandleTypeDef* htim);
+#endif
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+  if (!htim) {
+    return;
+#if (BSP_NR_DSHOTs > 0)
+  } else if (BSP_DSHOT_IDENTIFY_HANDLE(htim)) {
+    al_dshot_isr_cb(htim);
+#endif
+  }
+}

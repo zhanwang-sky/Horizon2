@@ -34,6 +34,10 @@
 #include "al_uart.h"
 #endif
 
+#if (BSP_NR_DSHOTs > 0)
+#include "al_dshot.h"
+#endif
+
 #if (BSP_NR_I2Cs > 0)
 #include "al_i2c.h"
 #endif
