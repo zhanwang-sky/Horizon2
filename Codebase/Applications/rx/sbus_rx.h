@@ -19,7 +19,7 @@ extern "C" {
 // Function prototypes
 int sbus_rx_init(int fd);
 
-int sbus_rx_poll(const sbus_frame_t** pp_frame, int timeout);
+int sbus_rx_poll(sbus_frame_t* p_frame, int timeout);
 
 #ifdef __cplusplus
 }

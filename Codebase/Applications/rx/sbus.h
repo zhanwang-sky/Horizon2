@@ -15,11 +15,13 @@
 extern "C" {
 #endif
 
-#define SBUS_FRAME_LEN 25
-#define SBUS_NR_CHANNELS 16
-#define SBUS_NR_SWITCHES 2
-#define SBUS_MIN_VALUE 172
-#define SBUS_MAX_VALUE 1811
+#define SBUS_FRAME_LEN     (25)
+#define SBUS_NR_CHANNELS   (16)
+#define SBUS_NR_SWITCHES   (2)
+#define SBUS_MIN_VALUE     (172)
+#define SBUS_NEUTRAL_VALUE (992)
+#define SBUS_MAX_VALUE     (1811)
+#define SBUS_FULL_SCALE    (1640)
 
 typedef struct sbus_frame {
   uint16_t channels[SBUS_NR_CHANNELS];

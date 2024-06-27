@@ -8,15 +8,15 @@
 // Includes
 #include <stdio.h>
 #include "al.h"
-#include "sbus_rx.h"
 
 // Definitions
-#define MAX_TASKS 100
+#define MAX_TASKS (100)
 
 // Function prototypes
 #if defined(UNIT_TEST)
 extern void unit_test(void);
 #endif
+extern void fc_init(int fd);
 
 // FreeRTOS callbacks
 #if defined(DEBUG)
@@ -46,9 +46,10 @@ void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: enable prefetch\r\n"
-                       "Stack high water mark(word):\r\n",
-                       round);
+                       "new feature: fc\r\n"
+                       "Stack high water mark(word): %s\r\n",
+                       round,
+                       !nr_tasks ? "Oops, too many tasks!" : "");
 
     for (int i = 0; i < nr_tasks; ++i) {
       high_water_mark = uxTaskGetStackHighWaterMark(task_status_arr[i].xHandle);
@@ -71,48 +72,6 @@ void task_monitor(void* param) {
 }
 #endif
 
-void sbus_dumper(void* param) {
-  static char msg_buf[256];
-
-  int rc;
-  int msg_len;
-  TickType_t prev_tick;
-  TickType_t curr_tick;
-  const sbus_frame_t* p_frame;
-
-  rc = sbus_rx_init(2);
-  configASSERT(rc == 0);
-
-  prev_tick = xTaskGetTickCount();
-  while (1) {
-    rc = sbus_rx_poll(&p_frame, 20);
-    curr_tick = xTaskGetTickCount();
-    if ((curr_tick - prev_tick) < (500 / portTICK_PERIOD_MS)) {
-      continue;
-    }
-    prev_tick = curr_tick;
-    msg_len = snprintf(msg_buf, sizeof(msg_buf),
-                       "%08x| ", curr_tick);
-    if (rc == 0) {
-      msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
-                          "%4hu %4hu %4hu %4hu %4hu %4hu %4hu %s %s\r\n",
-                          p_frame->channels[0],
-                          p_frame->channels[1],
-                          p_frame->channels[2],
-                          p_frame->channels[3],
-                          p_frame->channels[4],
-                          p_frame->channels[5],
-                          p_frame->channels[6],
-                          p_frame->frame_lost ? "*" : " ",
-                          p_frame->failsafe ? "!" : "");
-    } else {
-      msg_len += snprintf(msg_buf + msg_len, sizeof(msg_buf) - msg_len,
-                          "na\r\n");
-    }
-    al_uart_async_send(1, (const uint8_t*) msg_buf, msg_len, -1, NULL, NULL);
-  }
-}
-
 // main function
 int main(void) {
   BaseType_t ret = pdFAIL;
@@ -120,9 +79,11 @@ int main(void) {
   // system init
   al_init();
 
+  // module init
 #if defined(UNIT_TEST)
   unit_test();
 #endif
+  fc_init(2);
 
 #if defined(DEBUG)
   ret = xTaskCreate(task_monitor,
@@ -133,14 +94,6 @@ int main(void) {
                     NULL);
   configASSERT(ret == pdPASS);
 #endif
-
-  ret = xTaskCreate(sbus_dumper,
-                    "SBUS_DUMPER",
-                    2 * configMINIMAL_STACK_SIZE,
-                    NULL,
-                    tskIDLE_PRIORITY + 1,
-                    NULL);
-  configASSERT(ret == pdPASS);
 
   // start scheduler
   vTaskStartScheduler();

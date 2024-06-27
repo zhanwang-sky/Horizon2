@@ -10,7 +10,6 @@
 
 // Private variables
 static SemaphoreHandle_t sbus_rx_semphr;
-static sbus_frame_t sbus_rx_frame;
 static sbus_context_t sbus_rx_ctxarr[2];
 static sbus_context_t* sbus_rx_task_ctxptr = &sbus_rx_ctxarr[0];
 static sbus_context_t* sbus_rx_isr_ctxptr = &sbus_rx_ctxarr[1];
@@ -56,16 +55,15 @@ int sbus_rx_init(int fd) {
   return 0;
 }
 
-int sbus_rx_poll(const sbus_frame_t** pp_frame, int timeout) {
+int sbus_rx_poll(sbus_frame_t* p_frame, int timeout) {
   TickType_t ticks2wait = (timeout < 0) ? portMAX_DELAY : (timeout / portTICK_PERIOD_MS);
 
   if (xSemaphoreTake(sbus_rx_semphr, ticks2wait) != pdTRUE) {
     return -1;
   }
 
-  if (pp_frame) {
-    sbus_unpack_frame(sbus_rx_task_ctxptr, &sbus_rx_frame);
-    *pp_frame = &sbus_rx_frame;
+  if (p_frame) {
+    sbus_unpack_frame(sbus_rx_task_ctxptr, p_frame);
   }
 
   return 0;
