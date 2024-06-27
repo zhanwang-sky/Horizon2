@@ -46,7 +46,7 @@ void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: INCLUDE_vTaskSuspend\r\n"
+                       "new feature: enable prefetch\r\n"
                        "Stack high water mark(word):\r\n",
                        round);
 
@@ -87,7 +87,7 @@ void sbus_dumper(void* param) {
   while (1) {
     rc = sbus_rx_poll(&p_frame, 20);
     curr_tick = xTaskGetTickCount();
-    if ((curr_tick - prev_tick) < (50 / portTICK_PERIOD_MS)) {
+    if ((curr_tick - prev_tick) < (500 / portTICK_PERIOD_MS)) {
       continue;
     }
     prev_tick = curr_tick;

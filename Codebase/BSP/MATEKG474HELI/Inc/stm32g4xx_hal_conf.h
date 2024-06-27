@@ -181,7 +181,7 @@ The real value may vary depending on the variations in voltage and temperature.*
 #define TICK_INT_PRIORITY           (0x04UL) /* !< HAL_Tick interrupt priority */
 #define SYSTICK_INT_PRIORITY        (0x0FUL) /* !< SysTick interrupt priority */
 #define USE_RTOS                    0U
-#define PREFETCH_ENABLE             0U
+#define PREFETCH_ENABLE             1U
 #define INSTRUCTION_CACHE_ENABLE    1U
 #define DATA_CACHE_ENABLE           1U
 
