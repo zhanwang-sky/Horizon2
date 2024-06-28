@@ -23,14 +23,14 @@ extern "C" {
 #define SBUS_MAX_VALUE     (1811)
 #define SBUS_FULL_SCALE    (1640)
 
-typedef struct sbus_frame {
+typedef struct {
   uint16_t channels[SBUS_NR_CHANNELS];
   bool switches[SBUS_NR_SWITCHES];
   bool frame_lost;
   bool failsafe;
 } sbus_frame_t;
 
-typedef struct sbus_context {
+typedef struct {
   uint8_t state;
   uint8_t nbytes;
   uint8_t buf[SBUS_FRAME_LEN];

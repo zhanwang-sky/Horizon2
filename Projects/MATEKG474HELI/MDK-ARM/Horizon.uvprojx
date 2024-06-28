@@ -400,9 +400,9 @@
               <FilePath>..\..\..\Codebase\Applications\rx\sbus.c</FilePath>
             </File>
             <File>
-              <FileName>sbus_rx.c</FileName>
+              <FileName>sbus_receiver.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Codebase\Applications\rx\sbus_rx.c</FilePath>
+              <FilePath>..\..\..\Codebase\Applications\rx\sbus_receiver.c</FilePath>
             </File>
             <File>
               <FileName>unit_test.c</FileName>

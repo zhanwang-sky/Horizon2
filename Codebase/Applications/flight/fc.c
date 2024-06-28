@@ -7,7 +7,7 @@
 
 // Includes
 #include "al.h"
-#include "sbus_rx.h"
+#include "sbus_receiver.h"
 
 // Definitions
 #define PID_LOOP_PERIOD_MS (20)
@@ -42,18 +42,18 @@ static fc_data_t fc_data;
 // Experimental functions
 
 // Tasks
-void sbus_receiver(void* param) {
+void sbus_loop(void* param) {
   fc_data_t* p_fc = (fc_data_t*) param;
   stick_data_t* p_stick = &p_fc->stick_data;
-  sbus_rx_ctx_t* p_rx_ctx;
+  sbus_receiver_t* p_rc;
   sbus_frame_t frame;
   int rc;
 
-  p_rx_ctx = sbus_rx_init(p_fc->sbus_fd);
-  configASSERT(p_rx_ctx != NULL);
+  p_rc = sbus_receiver_create(p_fc->sbus_fd);
+  configASSERT(p_rc != NULL);
 
   while (1) {
-    rc = sbus_rx_poll(p_rx_ctx, &frame, -1);
+    rc = sbus_receiver_poll(p_rc, &frame, -1);
     if (rc != 0) {
       continue;
     }
@@ -136,8 +136,8 @@ void fc_init(int fd) {
   fc_data.stick_mtx = xSemaphoreCreateMutex();
   configASSERT(fc_data.stick_mtx != NULL);
 
-  ret = xTaskCreate(sbus_receiver,
-                    "SBUS_RECEIVER",
+  ret = xTaskCreate(sbus_loop,
+                    "SBUS_LOOP",
                     2 * configMINIMAL_STACK_SIZE,
                     &fc_data,
                     tskIDLE_PRIORITY + 2,

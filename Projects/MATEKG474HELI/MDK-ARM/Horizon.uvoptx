@@ -225,8 +225,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Codebase\Applications\rx\sbus_rx.c</PathWithFileName>
-      <FilenameWithoutPath>sbus_rx.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\Codebase\Applications\rx\sbus_receiver.c</PathWithFileName>
+      <FilenameWithoutPath>sbus_receiver.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
