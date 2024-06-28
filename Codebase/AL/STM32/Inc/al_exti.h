@@ -13,12 +13,12 @@ extern "C" {
 #endif
 
 // Typedefs
-typedef void (*al_exti_cb_t)(int);
+typedef void (*al_exti_cb_t)(int, void*);
 
 // Function prototypes
 void al_exti_init(void);
 
-int al_exti_start(int fd, al_exti_cb_t cb);
+int al_exti_start(int fd, al_exti_cb_t cb, void* param);
 
 #ifdef __cplusplus
 }

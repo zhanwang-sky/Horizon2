@@ -13,6 +13,7 @@
 // Private variables
 static SemaphoreHandle_t al_exti_line_semphrs[BSP_NR_EXTIs];
 static al_exti_cb_t volatile al_exti_callbacks[BSP_NR_EXTIs];
+static void* volatile al_exti_cb_params[BSP_NR_EXTIs];
 
 // Functions
 void al_exti_init(void) {
@@ -22,7 +23,7 @@ void al_exti_init(void) {
   }
 }
 
-int al_exti_start(int fd, al_exti_cb_t cb) {
+int al_exti_start(int fd, al_exti_cb_t cb, void* param) {
   // sanity check
   if (fd < 0 || fd >= BSP_NR_EXTIs || !cb) {
     return AL_ERROR_SANITY;
@@ -32,6 +33,8 @@ int al_exti_start(int fd, al_exti_cb_t cb) {
   if (xSemaphoreTake(al_exti_line_semphrs[fd], 0) != pdTRUE) {
     return AL_ERROR_BUSY;
   }
+  al_exti_cb_params[fd] = param;
+  __DSB();
   al_exti_callbacks[fd] = cb;
 
   return 0;
@@ -45,7 +48,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin) {
 
   if (fd >= 0 && fd < BSP_NR_EXTIs) {
     if (al_exti_callbacks[fd]) {
-      al_exti_callbacks[fd](fd);
+      al_exti_callbacks[fd](fd, al_exti_cb_params[fd]);
     }
   }
 }
