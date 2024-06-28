@@ -83,7 +83,7 @@ int main(void) {
 #if defined(UNIT_TEST)
   unit_test();
 #endif
-  // fc_init(2);
+  fc_init(2);
 
 #if defined(DEBUG)
   ret = xTaskCreate(task_monitor,

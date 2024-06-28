@@ -8,62 +8,80 @@
 // Includes
 #include "sbus_rx.h"
 
-// Private variables
-static SemaphoreHandle_t sbus_rx_semphr;
-static sbus_context_t sbus_rx_ctxarr[2];
-static sbus_context_t* sbus_rx_task_ctxptr = &sbus_rx_ctxarr[0];
-static sbus_context_t* sbus_rx_isr_ctxptr = &sbus_rx_ctxarr[1];
-static TickType_t sbus_rx_prev_tick;
-
 // Private functions
 static void sbus_rx_cb(int fd, int ec, void* param) {
+  sbus_rx_ctx_t* p_ctx = (sbus_rx_ctx_t*) param;
   TickType_t curr_tick;
-  uint8_t data;
 
   if (ec) {
-    sbus_reset_context(sbus_rx_isr_ctxptr);
+    sbus_reset_context(p_ctx->isr_ctx_ptr);
     return;
   }
 
   curr_tick = xTaskGetTickCountFromISR();
-  if ((curr_tick - sbus_rx_prev_tick) > (3 / portTICK_PERIOD_MS)) {
-    sbus_reset_context(sbus_rx_isr_ctxptr);
+  if ((curr_tick - p_ctx->prev_tick) > (3 / portTICK_PERIOD_MS)) {
+    sbus_reset_context(p_ctx->isr_ctx_ptr);
   }
-  sbus_rx_prev_tick = curr_tick;
+  p_ctx->prev_tick = curr_tick;
 
-  data = (uint8_t) ((uintptr_t) param);
-  if (sbus_receive_data(sbus_rx_isr_ctxptr, data)) {
+  if (sbus_receive_data(p_ctx->isr_ctx_ptr, p_ctx->rx_data)) {
     BaseType_t should_yield = pdFALSE;
-    sbus_context_t* ctxptr = sbus_rx_isr_ctxptr;
-    sbus_rx_isr_ctxptr = sbus_rx_task_ctxptr;
-    sbus_rx_task_ctxptr = ctxptr;
-    xSemaphoreGiveFromISR(sbus_rx_semphr, &should_yield);
+    sbus_context_t* ctx_ptr = p_ctx->isr_ctx_ptr;
+    p_ctx->isr_ctx_ptr = p_ctx->task_ctx_ptr;
+    p_ctx->task_ctx_ptr = ctx_ptr;
+    xSemaphoreGiveFromISR(p_ctx->semphr, &should_yield);
     portYIELD_FROM_ISR(should_yield);
   }
 }
 
 // Functions
-int sbus_rx_init(int fd) {
-  if (!(sbus_rx_semphr = xSemaphoreCreateBinary())) {
-    return -1;
-  }
+sbus_rx_ctx_t* sbus_rx_init(int fd) {
+  SemaphoreHandle_t semphr;
+  sbus_rx_ctx_t* p_ctx;
+  int rc = 0;
 
-  if (al_uart_start_receive(fd, sbus_rx_cb) != 0) {
-    return -1;
-  }
+  semphr = xSemaphoreCreateBinary();
+  configASSERT(semphr != NULL);
 
-  return 0;
+  p_ctx = pvPortMalloc(sizeof(sbus_rx_ctx_t));
+  configASSERT(p_ctx != NULL);
+
+  p_ctx->semphr = semphr;
+  p_ctx->prev_tick = 0;
+  sbus_reset_context(&p_ctx->ctxs[0]);
+  sbus_reset_context(&p_ctx->ctxs[1]);
+  p_ctx->task_ctx_ptr = &p_ctx->ctxs[0];
+  p_ctx->isr_ctx_ptr = &p_ctx->ctxs[1];
+
+  rc = al_uart_start_receive(fd, &p_ctx->rx_data, sbus_rx_cb, p_ctx);
+  configASSERT(rc == 0);
+
+  return p_ctx;
 }
 
-int sbus_rx_poll(sbus_frame_t* p_frame, int timeout) {
-  TickType_t ticks2wait = (timeout < 0) ? portMAX_DELAY : (timeout / portTICK_PERIOD_MS);
+int sbus_rx_poll(sbus_rx_ctx_t* p_ctx, sbus_frame_t* p_frame, int timeout) {
+  TickType_t ticks2wait;
 
-  if (xSemaphoreTake(sbus_rx_semphr, ticks2wait) != pdTRUE) {
+  // sanity check
+  if (!p_ctx) {
     return -1;
   }
 
+  // convert ms to ticks
+  if (timeout < 0) {
+    ticks2wait = portMAX_DELAY;
+  } else {
+    ticks2wait = timeout / portTICK_PERIOD_MS;
+  }
+
+  // wait
+  if (xSemaphoreTake(p_ctx->semphr, ticks2wait) != pdTRUE) {
+    return -1;
+  }
+
+  // unpack
   if (p_frame) {
-    sbus_unpack_frame(sbus_rx_task_ctxptr, p_frame);
+    sbus_unpack_frame(p_ctx->task_ctx_ptr, p_frame);
   }
 
   return 0;

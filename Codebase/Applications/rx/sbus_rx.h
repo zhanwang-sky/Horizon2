@@ -16,10 +16,20 @@
 extern "C" {
 #endif
 
-// Function prototypes
-int sbus_rx_init(int fd);
+// Typedefs
+typedef struct {
+  SemaphoreHandle_t semphr;
+  TickType_t prev_tick;
+  sbus_context_t ctxs[2];
+  sbus_context_t* task_ctx_ptr;
+  sbus_context_t* isr_ctx_ptr;
+  uint8_t rx_data;
+} sbus_rx_ctx_t;
 
-int sbus_rx_poll(sbus_frame_t* p_frame, int timeout);
+// Function prototypes
+sbus_rx_ctx_t* sbus_rx_init(int fd);
+
+int sbus_rx_poll(sbus_rx_ctx_t* p_ctx, sbus_frame_t* p_frame, int timeout);
 
 #ifdef __cplusplus
 }
