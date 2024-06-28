@@ -42,31 +42,31 @@ static fc_data_t fc_data;
 void sbus_receiver(void* param) {
   fc_data_t* p_fc = (fc_data_t*) param;
   stick_data_t* p_stick = &p_fc->stick_data;
-  sbus_rx_ctx_t* p_sbus_rx_ctx;
-  sbus_frame_t sbus_frame;
+  sbus_rx_ctx_t* p_rx_ctx;
+  sbus_frame_t frame;
   int rc;
 
-  p_sbus_rx_ctx = sbus_rx_init(p_fc->sbus_fd);
-  configASSERT(p_sbus_rx_ctx != NULL);
+  p_rx_ctx = sbus_rx_init(p_fc->sbus_fd);
+  configASSERT(p_rx_ctx != NULL);
 
   while (1) {
-    rc = sbus_rx_poll(p_sbus_rx_ctx, &sbus_frame, -1);
+    rc = sbus_rx_poll(p_rx_ctx, &frame, -1);
     if (rc != 0) {
       continue;
     }
     ++(p_fc->sbus_rx_cnt);
     if (xSemaphoreTake(p_fc->stick_mtx, portMAX_DELAY) == pdTRUE) {
       ++(p_stick->wd_rx_cnt);
-      p_stick->failsafe = sbus_frame.failsafe ? 1 : 0;
-      p_stick->frame_lost = sbus_frame.frame_lost ? 1 : 0;
-      p_stick->boost = (sbus_frame.channels[6] >= SBUS_MAX_VALUE) ? 1 : 0; // CH7
-      p_stick->flaps = (sbus_frame.channels[5] >= SBUS_MAX_VALUE) ? 1 :
-                       ((sbus_frame.channels[5] <= SBUS_MIN_VALUE) ? -1 : 0); // CH6
-      p_stick->arm = (sbus_frame.channels[4] >= SBUS_MAX_VALUE) ? 1 : 0; // CH5
-      p_stick->throttles[0] = ((int) sbus_frame.channels[2] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH3
-      p_stick->roll = ((int) sbus_frame.channels[3] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH4
-      p_stick->pitch = ((int) sbus_frame.channels[1] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH2
-      p_stick->yaw = ((int) sbus_frame.channels[0] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH1
+      p_stick->failsafe = frame.failsafe ? 1 : 0;
+      p_stick->frame_lost = frame.frame_lost ? 1 : 0;
+      p_stick->boost = (frame.channels[6] >= SBUS_MAX_VALUE) ? 1 : 0; // CH7
+      p_stick->flaps = (frame.channels[5] >= SBUS_MAX_VALUE) ? 1 :
+                       ((frame.channels[5] <= SBUS_MIN_VALUE) ? -1 : 0); // CH6
+      p_stick->arm = (frame.channels[4] >= SBUS_MAX_VALUE) ? 1 : 0; // CH5
+      p_stick->throttles[0] = ((int) frame.channels[2] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH3
+      p_stick->roll = ((int) frame.channels[3] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH4
+      p_stick->pitch = ((int) frame.channels[1] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH2
+      p_stick->yaw = ((int) frame.channels[0] - SBUS_NEUTRAL_VALUE) * inverted_sbus_half_scale; // CH1
       xSemaphoreGive(p_fc->stick_mtx);
     }
   }
