@@ -36,7 +36,7 @@ static volatile uint8_t uart_last_recv;
 
 // Callbacks
 static void uart_rx_cb(int fd, int ec, void* param) {
-  uart_last_recv = (uint8_t) ((uintptr_t) param);
+  uart_last_recv = *((uint8_t*) param);
   if (ec) {
     ++uart_rx_err;
   }
@@ -278,6 +278,7 @@ static void test_i2c(void* param) {
 static void test_uart(void* param) {
   static char msg_buf[192];
   static char data_buf[64];
+  static uint8_t rx_data;
   int fd = *((int*) param);
   int rc;
   int ec;
@@ -292,7 +293,7 @@ static void test_uart(void* param) {
 
   vTaskDelay(3000 / portTICK_PERIOD_MS);
 
-  rc = al_uart_start_receive(fd, uart_rx_cb);
+  rc = al_uart_start_receive(fd, &rx_data, uart_rx_cb, &rx_data);
 
   msg_len = snprintf(msg_buf, sizeof(msg_buf),
                      "TEST_UART(fd=%d)[uart_intr=%u dmatx=%u]: start reception, rc=%d\r\n",

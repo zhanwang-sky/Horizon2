@@ -21,8 +21,9 @@ static SemaphoreHandle_t al_uart_rx_bus_semphrs[BSP_NR_UARTs];
 static SemaphoreHandle_t al_uart_tx_bus_semphrs[BSP_NR_UARTs];
 static al_uart_cb_t volatile al_uart_rx_callbacks[BSP_NR_UARTs];
 static al_uart_cb_t volatile al_uart_tx_callbacks[BSP_NR_UARTs];
-static uint8_t al_uart_rx_bufs[BSP_NR_UARTs];
+static void* volatile al_uart_rx_params[BSP_NR_UARTs];
 static void* volatile al_uart_tx_params[BSP_NR_UARTs];
+static uint8_t* volatile al_uart_rx_bufs[BSP_NR_UARTs];
 
 // Functions
 void al_uart_init(void) {
@@ -34,11 +35,11 @@ void al_uart_init(void) {
   }
 }
 
-int al_uart_start_receive(int fd, al_uart_cb_t cb) {
+int al_uart_start_receive(int fd, uint8_t* buf, al_uart_cb_t cb, void* param) {
   UART_HandleTypeDef* huart = NULL;
 
   // sanity check
-  if (fd < 0 || fd >= BSP_NR_UARTs || !cb) {
+  if (fd < 0 || fd >= BSP_NR_UARTs || !buf || !cb) {
     return AL_ERROR_SANITY;
   }
 
@@ -53,9 +54,11 @@ int al_uart_start_receive(int fd, al_uart_cb_t cb) {
     return AL_ERROR_BUSY;
   }
   al_uart_rx_callbacks[fd] = cb;
+  al_uart_rx_params[fd] = param;
+  al_uart_rx_bufs[fd] = buf;
 
   // start reception in interrupt mode
-  if (HAL_UART_Receive_IT(huart, &al_uart_rx_bufs[fd], 1U) != HAL_OK) {
+  if (HAL_UART_Receive_IT(huart, al_uart_rx_bufs[fd], 1U) != HAL_OK) {
     xSemaphoreGive(al_uart_rx_bus_semphrs[fd]);
     return AL_ERROR_HAL;
   }
@@ -117,9 +120,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
   if (fd >= 0 && fd < BSP_NR_UARTs) {
     if (al_uart_rx_callbacks[fd]) {
       ec = (huart->ErrorCode == HAL_UART_ERROR_NONE) ? 0 : -1;
-      al_uart_rx_callbacks[fd](fd, ec, (void*) ((uintptr_t) al_uart_rx_bufs[fd]));
+      al_uart_rx_callbacks[fd](fd, ec, al_uart_rx_params[fd]);
     }
-    status = HAL_UART_Receive_IT(huart, &al_uart_rx_bufs[fd], 1U);
+    status = HAL_UART_Receive_IT(huart, al_uart_rx_bufs[fd], 1U);
     assert_param(status == HAL_OK);
   }
 }
