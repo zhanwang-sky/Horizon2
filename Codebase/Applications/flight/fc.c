@@ -6,6 +6,7 @@
 //
 
 // Includes
+#include <string.h>
 #include "al.h"
 #include "sbus_receiver.h"
 
@@ -37,7 +38,6 @@ typedef struct {
 
 // Private variables
 static const float inverted_sbus_full_scale = 1.f / SBUS_FULL_SCALE;
-static fc_data_t fc_data;
 
 // Experimental functions
 
@@ -130,16 +130,26 @@ void pid_loop(void* param) {
 
 // Functions
 void fc_init(int fd) {
+  fc_data_t* p_fc;
+  SemaphoreHandle_t mtx;
   BaseType_t ret = pdFAIL;
 
-  fc_data.sbus_fd = fd;
-  fc_data.stick_mtx = xSemaphoreCreateMutex();
-  configASSERT(fc_data.stick_mtx != NULL);
+  p_fc = pvPortMalloc(sizeof(fc_data_t));
+  configASSERT(p_fc != NULL);
+
+  mtx = xSemaphoreCreateMutex();
+  configASSERT(mtx != NULL);
+
+  p_fc->sbus_fd = fd;
+  p_fc->stick_mtx = mtx;
+  memset(&p_fc->stick_data, 0, sizeof(stick_data_t));
+  p_fc->sbus_rx_cnt = 0;
+  p_fc->pid_loop_cnt = 0;
 
   ret = xTaskCreate(sbus_loop,
                     "SBUS_LOOP",
                     2 * configMINIMAL_STACK_SIZE,
-                    &fc_data,
+                    p_fc,
                     tskIDLE_PRIORITY + 2,
                     NULL);
   configASSERT(ret == pdPASS);
@@ -147,7 +157,7 @@ void fc_init(int fd) {
   ret = xTaskCreate(pid_loop,
                     "PID_LOOP",
                     2 * configMINIMAL_STACK_SIZE,
-                    &fc_data,
+                    p_fc,
                     tskIDLE_PRIORITY + 1,
                     NULL);
   configASSERT(ret == pdPASS);
