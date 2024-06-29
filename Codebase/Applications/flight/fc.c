@@ -57,12 +57,12 @@ static const float inverted_sbus_full_scale = 1.f / SBUS_FULL_SCALE;
 #define THROTTLE_REVERSED    (0)
 // ailerons
 #define AILERON_L_NEUTRAL_US (1475)
-#define AILERON_L_MIN_US     (1295)
-#define AILERON_L_MAX_US     (1655)
+#define AILERON_L_MIN_US     (1175)
+#define AILERON_L_MAX_US     (1775)
 #define AILERON_L_REVERSED   (1)
 #define AILERON_R_NEUTRAL_US (1500)
-#define AILERON_R_MIN_US     (1320)
-#define AILERON_R_MAX_US     (1680)
+#define AILERON_R_MIN_US     (1200)
+#define AILERON_R_MAX_US     (1800)
 #define AILERON_R_REVERSED   (1)
 
 inline int calculate_pwm(float x, int min_us, int max_us, int reversed) {
@@ -119,30 +119,34 @@ void pid_loop(void* param) {
   // boost
   int boost_activated = 0;
   int boost_time_ms = 0;
-  // buttons
-  int armed = 0;
-  int boost = 0;
-  // surfaces
-  float rudder = 0.5f;
-  float elevator = 0.5f;
-  float throttle = 0.f;
-  float aileron = 0.5f;
-  float flaps = 0.f;
-  // PWMs
-  int rudder_pwm;
-  int elevator_pwm;
-  int throttle_pwm;
-  int aileronL_pwm;
-  int aileronR_pwm;
 
   last_wake = xTaskGetTickCount();
   while (1) {
+    // buttons
+    int armed;
+    int boost;
+    // throttle
+    float throttle;
+    // surfaces
+    float rudder;
+    float elevator;
+    float aileron;
+    int flaps;
+    // PWMs
+    int rudder_pwm;
+    int elevator_pwm;
+    int throttle_pwm;
+    int aileronL_pwm;
+    int aileronR_pwm;
+
     vTaskDelayUntil(&last_wake, PID_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
+
     // stats
     ++(p_fc->pid_loop_cnt);
 
     // get stick positions
     if (xSemaphoreTake(p_fc->stick_mtx, portMAX_DELAY) == pdTRUE) {
+      // update failsafe state
       if (p_stick->wd_rx_cnt == 0) {
         if (no_signal_ms < RX_TIMEOUT_MS) {
           no_signal_ms += PID_LOOP_PERIOD_MS;
@@ -154,22 +158,23 @@ void pid_loop(void* param) {
         p_stick->wd_rx_cnt = 0;
         no_signal_ms = 0;
         failsafe = 0;
-        // stick positions
-        armed = p_stick->arm;
-        boost = p_stick->boost;
-        rudder = p_stick->yaw;
-        elevator = p_stick->pitch;
-        throttle = p_stick->throttles[0];
-        aileron = p_stick->roll;
-        flaps = p_stick->flaps;
       }
+      // stick positions
+      armed = p_stick->arm;
+      boost = p_stick->boost;
+      throttle = p_stick->throttles[0];
+      rudder = p_stick->yaw;
+      elevator = p_stick->pitch;
+      aileron = p_stick->roll;
+      flaps = p_stick->flaps;
       xSemaphoreGive(p_fc->stick_mtx);
     } else {
+      // update failsafe state
       no_signal_ms = RX_TIMEOUT_MS;
       failsafe = 1;
     }
 
-    // logic mixer
+    // Mixing
     // boost
     if (!failsafe && armed && boost && throttle > 0.95f) {
       boost_activated = 1;
@@ -191,24 +196,35 @@ void pid_loop(void* param) {
       rudder = 0.5f;
       elevator = 0.5f;
       aileron = 0.5f;
-      if (flaps < 0.f) {
-        flaps = 0.f;
+      if (flaps < 0) {
+        flaps = 0;
       }
+    } else {
+      aileron = aileron * 0.6f + 0.2f;
     }
 
     // PWMs
     rudder_pwm = calculate_pwm(rudder, RUDDER_MIN_US, RUDDER_MAX_US, RUDDER_REVERSED);
     elevator_pwm = calculate_pwm(elevator, ELEVATOR_MIN_US, ELEVATOR_MAX_US, ELEVATOR_REVERSED);
     throttle_pwm = calculate_pwm(throttle, THROTTLE_MIN_US, THROTTLE_MAX_US, THROTTLE_REVERSED);
-    aileronL_pwm = calculate_pwm(aileron, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
-    aileronR_pwm = calculate_pwm(aileron, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+    if (flaps > 0) {
+      aileronL_pwm = calculate_pwm(aileron + 0.2f, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
+      aileronR_pwm = calculate_pwm(aileron - 0.2f, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+    } else if (flaps < 0) {
+      aileronL_pwm = calculate_pwm(aileron - 0.1f, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
+      aileronR_pwm = calculate_pwm(aileron + 0.1f, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+    } else {
+      aileronL_pwm = calculate_pwm(aileron, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
+      aileronR_pwm = calculate_pwm(aileron, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+    }
 
     al_pwm_write(0, rudder_pwm);
     al_pwm_write(1, elevator_pwm);
     al_pwm_write(2, aileronL_pwm);
     al_pwm_write(3, aileronR_pwm);
     al_pwm_write(4, throttle_pwm);
-    al_pwm_write(5, throttle_pwm);
+    // for ESC signal calibration
+    al_pwm_write(5, (!failsafe && armed) ? THROTTLE_MAX_US : THROTTLE_MIN_US);
   }
 }
 
