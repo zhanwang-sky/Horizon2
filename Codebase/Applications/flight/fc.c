@@ -13,6 +13,7 @@
 // Definitions
 #define PID_LOOP_PERIOD_MS (20)
 #define RX_TIMEOUT_MS      (100)
+#define BOOST_TIME_MS      (20000)
 
 // Private typedefs
 typedef struct {
@@ -84,23 +85,27 @@ void pid_loop(void* param) {
   // failsafe
   int no_signal_ms = 0;
   int failsafe = 1;
-  // stick positions
+  // boost
+  int boost_activated = 0;
+  int boost_time_ms = 0;
+  // buttons
   int armed = 0;
   int boost = 0;
-  int flaps = 0;
+  // surfaces
   float rudder = 0.5f;
   float elevator = 0.5f;
   float throttle = 0.f;
   float aileron = 0.5f;
+  float flaps = 0.f;
 
   last_wake = xTaskGetTickCount();
   while (1) {
     vTaskDelayUntil(&last_wake, PID_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
     // stats
     ++(p_fc->pid_loop_cnt);
+
     // get stick positions
     if (xSemaphoreTake(p_fc->stick_mtx, portMAX_DELAY) == pdTRUE) {
-      // failsafe
       if (p_stick->wd_rx_cnt == 0) {
         if (no_signal_ms < RX_TIMEOUT_MS) {
           no_signal_ms += PID_LOOP_PERIOD_MS;
@@ -112,19 +117,47 @@ void pid_loop(void* param) {
         p_stick->wd_rx_cnt = 0;
         no_signal_ms = 0;
         failsafe = 0;
+        // stick positions
+        armed = p_stick->arm;
+        boost = p_stick->boost;
+        rudder = p_stick->yaw;
+        elevator = p_stick->pitch;
+        throttle = p_stick->throttles[0];
+        aileron = p_stick->roll;
+        flaps = p_stick->flaps;
       }
-      // stick positions
-      armed = p_stick->arm;
-      boost = p_stick->boost;
-      rudder = p_stick->yaw;
-      elevator = p_stick->pitch;
-      throttle = p_stick->throttles[0];
-      aileron = p_stick->roll;
-      flaps = p_stick->flaps;
-
       xSemaphoreGive(p_fc->stick_mtx);
+    } else {
+      no_signal_ms = RX_TIMEOUT_MS;
+      failsafe = 1;
     }
-    // smooth
+
+    // logic mixer
+    // boost
+    if (!failsafe && armed && boost && throttle > 0.95f) {
+      boost_activated = 1;
+      boost_time_ms = 0;
+    } else if (failsafe || !armed || throttle < 0.9f || boost_time_ms >= BOOST_TIME_MS) {
+      boost_activated = 0;
+    }
+    // throttle
+    if (failsafe || !armed) {
+      throttle = 0.f;
+    } else if (boost_activated) {
+      throttle = 1.f;
+      boost_time_ms += PID_LOOP_PERIOD_MS;
+    } else {
+      throttle *= 0.8f;
+    }
+    // surfaces
+    if (failsafe) {
+      rudder = 0.5f;
+      elevator = 0.5f;
+      aileron = 0.5f;
+      if (flaps < 0.f) {
+        flaps = 0.f;
+      }
+    }
   }
 }
 
