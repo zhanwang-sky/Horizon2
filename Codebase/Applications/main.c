@@ -95,6 +95,9 @@ int main(void) {
   configASSERT(ret == pdPASS);
 #endif
 
+  // start watch dog
+  al_wdog_init();
+
   // start scheduler
   vTaskStartScheduler();
 

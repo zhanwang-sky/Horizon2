@@ -139,6 +139,20 @@ void pid_loop(void* param) {
     int aileronL_pwm;
     int aileronR_pwm;
 
+    // XXX TODO: remove
+    // failsafe indicator
+    if (failsafe) {
+      if (p_fc->pid_loop_cnt % 5 == 0) {
+        bool state;
+        al_gpio_get(2, &state);
+        al_gpio_set(2, !state);
+      }
+    } else {
+      al_gpio_set(2, false);
+    }
+    // feed
+    al_wdog_feed();
+
     vTaskDelayUntil(&last_wake, PID_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
 
     // stats
