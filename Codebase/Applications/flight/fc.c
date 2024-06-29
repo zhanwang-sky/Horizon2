@@ -41,6 +41,37 @@ typedef struct {
 static const float inverted_sbus_full_scale = 1.f / SBUS_FULL_SCALE;
 
 // Experimental functions
+// rudder
+#define RUDDER_NEUTRAL_US    (1500)
+#define RUDDER_MIN_US        (1200)
+#define RUDDER_MAX_US        (1800)
+#define RUDDER_REVERSED      (0)
+// elevator
+#define ELEVATOR_NEUTRAL_US  (1600)
+#define ELEVATOR_MIN_US      (1300)
+#define ELEVATOR_MAX_US      (1900)
+#define ELEVATOR_REVERSED    (1)
+// throttle
+#define THROTTLE_MIN_US      (1000)
+#define THROTTLE_MAX_US      (2000)
+#define THROTTLE_REVERSED    (0)
+// ailerons
+#define AILERON_L_NEUTRAL_US (1475)
+#define AILERON_L_MIN_US     (1295)
+#define AILERON_L_MAX_US     (1655)
+#define AILERON_L_REVERSED   (1)
+#define AILERON_R_NEUTRAL_US (1500)
+#define AILERON_R_MIN_US     (1320)
+#define AILERON_R_MAX_US     (1680)
+#define AILERON_R_REVERSED   (1)
+
+inline int calculate_pwm(float x, int min_us, int max_us, int reversed) {
+  int scale_us = max_us - min_us;
+  int result = min_us;
+  if (reversed) { x = 1.f - x; }
+  result += x * scale_us;
+  return (result < min_us) ? min_us : ((result > max_us) ? max_us : result);
+}
 
 // Tasks
 void sbus_loop(void* param) {
@@ -97,6 +128,12 @@ void pid_loop(void* param) {
   float throttle = 0.f;
   float aileron = 0.5f;
   float flaps = 0.f;
+  // PWMs
+  int rudder_pwm;
+  int elevator_pwm;
+  int throttle_pwm;
+  int aileronL_pwm;
+  int aileronR_pwm;
 
   last_wake = xTaskGetTickCount();
   while (1) {
@@ -158,6 +195,20 @@ void pid_loop(void* param) {
         flaps = 0.f;
       }
     }
+
+    // PWMs
+    rudder_pwm = calculate_pwm(rudder, RUDDER_MIN_US, RUDDER_MAX_US, RUDDER_REVERSED);
+    elevator_pwm = calculate_pwm(elevator, ELEVATOR_MIN_US, ELEVATOR_MAX_US, ELEVATOR_REVERSED);
+    throttle_pwm = calculate_pwm(throttle, THROTTLE_MIN_US, THROTTLE_MAX_US, THROTTLE_REVERSED);
+    aileronL_pwm = calculate_pwm(aileron, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
+    aileronR_pwm = calculate_pwm(aileron, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+
+    al_pwm_write(0, rudder_pwm);
+    al_pwm_write(1, elevator_pwm);
+    al_pwm_write(2, aileronL_pwm);
+    al_pwm_write(3, aileronR_pwm);
+    al_pwm_write(4, throttle_pwm);
+    al_pwm_write(5, throttle_pwm);
   }
 }
 
