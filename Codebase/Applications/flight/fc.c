@@ -12,7 +12,7 @@
 
 // Definitions
 #define PID_LOOP_PERIOD_MS (20)
-#define RX_TIMEOUT_MS      (100)
+#define RX_TIMEOUT_MS      (200)
 #define BOOST_TIME_MS      (20000)
 
 // Private typedefs
