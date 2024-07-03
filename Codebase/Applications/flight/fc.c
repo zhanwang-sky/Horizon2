@@ -11,9 +11,10 @@
 #include "sbus_receiver.h"
 
 // Definitions
-#define PID_LOOP_PERIOD_MS (20)
-#define RX_TIMEOUT_MS      (200)
-#define BOOST_TIME_MS      (20000)
+#define PID_LOOP_PERIOD_MS     (20)
+#define RX_TIMEOUT_MS          (300)
+#define BOOST_TIME_MS          (20000)
+#define THROTTLE_SMOOTH_FACTOR (0.5f)
 
 // Private typedefs
 typedef struct {
@@ -41,36 +42,53 @@ typedef struct {
 static const float inverted_sbus_full_scale = 1.f / SBUS_FULL_SCALE;
 
 // Experimental functions
+// Mixing
+#define RUDDER_PROPORTION    (1.f)
+#define ELEVATOR_PROPORTION  (1.f)
+#define AILERON_PROPORTION   (0.7f)
+#define FLAP_PROPORTION      (0.15f)
+#define AIRBRAKE_PROPORTION  (0.15f)
+// PWMs
 // rudder
 #define RUDDER_NEUTRAL_US    (1500)
-#define RUDDER_MIN_US        (1200)
-#define RUDDER_MAX_US        (1800)
+#define RUDDER_MIN_US        (1275)
+#define RUDDER_MAX_US        (1735)
 #define RUDDER_REVERSED      (0)
 // elevator
 #define ELEVATOR_NEUTRAL_US  (1600)
-#define ELEVATOR_MIN_US      (1300)
-#define ELEVATOR_MAX_US      (1900)
-#define ELEVATOR_REVERSED    (1)
+#define ELEVATOR_MIN_US      (1380)
+#define ELEVATOR_MAX_US      (1800)
+#define ELEVATOR_REVERSED    (0)
 // throttle
 #define THROTTLE_MIN_US      (1000)
 #define THROTTLE_MAX_US      (2000)
 #define THROTTLE_REVERSED    (0)
 // ailerons
-#define AILERON_L_NEUTRAL_US (1475)
-#define AILERON_L_MIN_US     (1175)
-#define AILERON_L_MAX_US     (1775)
+#define AILERON_L_NEUTRAL_US (1450)
+#define AILERON_L_MIN_US     (1220)
+#define AILERON_L_MAX_US     (1680)
 #define AILERON_L_REVERSED   (1)
-#define AILERON_R_NEUTRAL_US (1500)
-#define AILERON_R_MIN_US     (1200)
-#define AILERON_R_MAX_US     (1800)
+#define AILERON_R_NEUTRAL_US (1510)
+#define AILERON_R_MIN_US     (1280)
+#define AILERON_R_MAX_US     (1740)
 #define AILERON_R_REVERSED   (1)
 
-inline int calculate_pwm(float x, int min_us, int max_us, int reversed) {
-  int scale_us = max_us - min_us;
-  int result = min_us;
+inline int dual_slope_pwm(float x, int neutral_us, int min_us, int max_us, int reversed) {
+  int a, b, y;
+  if (reversed) { x = -x; }
+  a = (x < 0.f) ? neutral_us - min_us : max_us - neutral_us;
+  b = neutral_us;
+  y = 2 * a * x + b;
+  return (y < min_us) ? min_us : ((y > max_us) ? max_us : y);
+}
+
+inline int linear_pwm(float x, int min_us, int max_us, int reversed) {
+  int a = max_us - min_us;
+  int b = min_us;
+  int y;
   if (reversed) { x = 1.f - x; }
-  result += x * scale_us;
-  return (result < min_us) ? min_us : ((result > max_us) ? max_us : result);
+  y = a * x + b;
+  return (y < min_us) ? min_us : ((y > max_us) ? max_us : y);
 }
 
 // Tasks
@@ -100,9 +118,9 @@ void sbus_loop(void* param) {
                         ((frame.channels[5] <= SBUS_MIN_VALUE) ? -1 : 0); // CH6
         p_stick->arm = (frame.channels[4] >= SBUS_MAX_VALUE) ? 1 : 0; // CH5
         p_stick->throttles[0] = ((int) frame.channels[2] - SBUS_MIN_VALUE) * inverted_sbus_full_scale; // CH3
-        p_stick->roll = ((int) frame.channels[3] - SBUS_MIN_VALUE) * inverted_sbus_full_scale; // CH4
-        p_stick->pitch = ((int) frame.channels[1] - SBUS_MIN_VALUE) * inverted_sbus_full_scale; // CH2
-        p_stick->yaw = ((int) frame.channels[0] - SBUS_MIN_VALUE) * inverted_sbus_full_scale; // CH1
+        p_stick->roll = ((int) frame.channels[3] - SBUS_NEUTRAL_VALUE) * inverted_sbus_full_scale; // CH4
+        p_stick->pitch = ((int) frame.channels[1] - SBUS_NEUTRAL_VALUE) * inverted_sbus_full_scale; // CH2
+        p_stick->yaw = ((int) frame.channels[0] - SBUS_NEUTRAL_VALUE) * inverted_sbus_full_scale; // CH1
       }
       xSemaphoreGive(p_fc->stick_mtx);
     }
@@ -119,6 +137,8 @@ void pid_loop(void* param) {
   // boost
   int boost_activated = 0;
   int boost_time_ms = 0;
+  // throttle smoother
+  float prev_throttle = 0.f;
 
   last_wake = xTaskGetTickCount();
   while (1) {
@@ -127,6 +147,7 @@ void pid_loop(void* param) {
     int boost;
     // throttle
     float throttle;
+    float throttle_delta;
     // surfaces
     float rudder;
     float elevator;
@@ -139,7 +160,7 @@ void pid_loop(void* param) {
     int aileronL_pwm;
     int aileronR_pwm;
 
-    // XXX TODO: remove
+    // XXX TODO: remove this
     // failsafe indicator
     if (failsafe) {
       if (p_fc->pid_loop_cnt % 5 == 0) {
@@ -205,32 +226,50 @@ void pid_loop(void* param) {
     } else {
       throttle *= 0.8f;
     }
+    // smooth
+    throttle_delta = throttle - prev_throttle;
+    if (THROTTLE_SMOOTH_FACTOR > 1e-2f && throttle_delta > 0.f) {
+      float max_delta = (0.001f * PID_LOOP_PERIOD_MS) / THROTTLE_SMOOTH_FACTOR;
+      throttle_delta = throttle_delta > max_delta ? max_delta : throttle_delta;
+    }
+    prev_throttle += throttle_delta;
+    throttle = prev_throttle;
     // surfaces
     if (failsafe) {
-      rudder = 0.5f;
-      elevator = 0.5f;
-      aileron = 0.5f;
+      rudder = 0.f;
+      elevator = 0.f;
+      aileron = 0.f;
       if (flaps < 0) {
         flaps = 0;
       }
     } else {
-      aileron = aileron * 0.6f + 0.2f;
+      rudder *= RUDDER_PROPORTION;
+      elevator *= ELEVATOR_PROPORTION;
+      aileron *= AILERON_PROPORTION;
     }
 
     // PWMs
-    rudder_pwm = calculate_pwm(rudder, RUDDER_MIN_US, RUDDER_MAX_US, RUDDER_REVERSED);
-    elevator_pwm = calculate_pwm(elevator, ELEVATOR_MIN_US, ELEVATOR_MAX_US, ELEVATOR_REVERSED);
-    throttle_pwm = calculate_pwm(throttle, THROTTLE_MIN_US, THROTTLE_MAX_US, THROTTLE_REVERSED);
+    rudder_pwm = dual_slope_pwm(rudder, RUDDER_NEUTRAL_US, RUDDER_MIN_US, RUDDER_MAX_US, RUDDER_REVERSED);
+    elevator_pwm = dual_slope_pwm(elevator, ELEVATOR_NEUTRAL_US, ELEVATOR_MIN_US, ELEVATOR_MAX_US, ELEVATOR_REVERSED);
     if (flaps > 0) {
-      aileronL_pwm = calculate_pwm(aileron + 0.2f, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
-      aileronR_pwm = calculate_pwm(aileron - 0.2f, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+      aileronL_pwm = dual_slope_pwm(aileron + FLAP_PROPORTION,
+                                    AILERON_L_NEUTRAL_US, AILERON_L_MIN_US, AILERON_L_MAX_US,
+                                    AILERON_L_REVERSED);
+      aileronR_pwm = dual_slope_pwm(aileron - FLAP_PROPORTION,
+                                    AILERON_R_NEUTRAL_US, AILERON_R_MIN_US, AILERON_R_MAX_US,
+                                    AILERON_R_REVERSED);
     } else if (flaps < 0) {
-      aileronL_pwm = calculate_pwm(aileron - 0.1f, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
-      aileronR_pwm = calculate_pwm(aileron + 0.1f, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+      aileronL_pwm = dual_slope_pwm(aileron - AIRBRAKE_PROPORTION,
+                                    AILERON_L_NEUTRAL_US, AILERON_L_MIN_US, AILERON_L_MAX_US,
+                                    AILERON_L_REVERSED);
+      aileronR_pwm = dual_slope_pwm(aileron + AIRBRAKE_PROPORTION,
+                                    AILERON_R_NEUTRAL_US, AILERON_R_MIN_US, AILERON_R_MAX_US,
+                                    AILERON_R_REVERSED);
     } else {
-      aileronL_pwm = calculate_pwm(aileron, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
-      aileronR_pwm = calculate_pwm(aileron, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
+      aileronL_pwm = dual_slope_pwm(aileron, AILERON_L_NEUTRAL_US, AILERON_L_MIN_US, AILERON_L_MAX_US, AILERON_L_REVERSED);
+      aileronR_pwm = dual_slope_pwm(aileron, AILERON_R_NEUTRAL_US, AILERON_R_MIN_US, AILERON_R_MAX_US, AILERON_R_REVERSED);
     }
+    throttle_pwm = linear_pwm(throttle, THROTTLE_MIN_US, THROTTLE_MAX_US, THROTTLE_REVERSED);
 
     al_pwm_write(0, rudder_pwm);
     al_pwm_write(1, elevator_pwm);

@@ -46,7 +46,7 @@ void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: PWM\r\n"
+                       "new feature: throttle smoother & dual slope PWM\r\n"
                        "Stack high water mark(word): %s\r\n",
                        round,
                        !nr_tasks ? "Oops, too many tasks!" : "");
