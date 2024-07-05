@@ -58,7 +58,7 @@ static const float inverted_sbus_full_scale = 1.f / SBUS_FULL_SCALE;
 #define ELEVATOR_NEUTRAL_US  (1600)
 #define ELEVATOR_MIN_US      (1380)
 #define ELEVATOR_MAX_US      (1800)
-#define ELEVATOR_REVERSED    (0)
+#define ELEVATOR_REVERSED    (1)
 // throttle
 #define THROTTLE_MIN_US      (1000)
 #define THROTTLE_MAX_US      (2000)
