@@ -46,7 +46,7 @@ void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: UPDATE\r\n"
+                       "new feature: upgrade STM32G4xx HAL driver\r\n"
                        "Stack high water mark(word): %s\r\n",
                        round,
                        !nr_tasks ? "Oops, too many tasks!" : "");
