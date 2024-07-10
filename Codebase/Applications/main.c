@@ -46,7 +46,7 @@ void task_monitor(void* param) {
     msg_len = snprintf(msg_buf, sizeof(msg_buf),
                        "----------\r\n"
                        "(%u)\r\n"
-                       "new feature: throttle smoother & dual slope PWM\r\n"
+                       "new feature: UPDATE\r\n"
                        "Stack high water mark(word): %s\r\n",
                        round,
                        !nr_tasks ? "Oops, too many tasks!" : "");
@@ -83,7 +83,7 @@ int main(void) {
 #if defined(UNIT_TEST)
   unit_test();
 #endif
-  fc_init(2);
+  // fc_init(2);
 
 #if defined(DEBUG)
   ret = xTaskCreate(task_monitor,
@@ -96,7 +96,7 @@ int main(void) {
 #endif
 
   // start watch dog
-  al_wdog_init();
+  // al_wdog_init();
 
   // start scheduler
   vTaskStartScheduler();
