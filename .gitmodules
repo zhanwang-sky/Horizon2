@@ -3,10 +3,10 @@
 	url = https://github.com/zhanwang-sky/CMSIS-Core.git
 [submodule "Codebase/Drivers/CMSIS/Device/ST/STM32G4xx"]
 	path = Codebase/Drivers/CMSIS/Device/ST/STM32G4xx
-	url = https://github.com/zhanwang-sky/cmsis_device_g4.git
+	url = https://github.com/zhanwang-sky/cmsis-device-g4.git
 [submodule "Codebase/Drivers/STM32G4xx_HAL_Driver"]
 	path = Codebase/Drivers/STM32G4xx_HAL_Driver
-	url = https://github.com/zhanwang-sky/stm32g4xx_hal_driver.git
+	url = https://github.com/zhanwang-sky/stm32g4xx-hal-driver.git
 [submodule "Codebase/FreeRTOS"]
 	path = Codebase/FreeRTOS
-	url = https://github.com/zhanwang-sky/FreeRTOS.git
+	url = https://github.com/zhanwang-sky/FreeRTOS-Kernel.git
